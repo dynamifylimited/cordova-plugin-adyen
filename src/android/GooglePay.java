@@ -21,7 +21,7 @@ import java.util.Arrays;
 /**
  * Google Pay implementation for Cordova
  */
-public class ApplePayGooglePay extends CordovaPlugin {
+public class GooglePay extends CordovaPlugin {
     private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
     private PaymentsClient paymentsClient;
 
