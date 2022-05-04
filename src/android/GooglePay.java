@@ -114,15 +114,10 @@ public class GooglePay extends CordovaPlugin {
         task.addOnCompleteListener(cordova.getActivity(),
                 new OnCompleteListener<Boolean>() {
                     @Override
-                    public void onComplete(Task<Boolean> task) {
-                        try {
-                            boolean result = task.getResult(ApiException.class);
-                            if (!result) callbackContext.error("Not supported");
-                            else callbackContext.success();
+                    public void onComplete(@NonNull Task<Boolean> task) {
+                        boolean result = task.isSuccessful();
 
-                        } catch (ApiException exception) {
-                            callbackContext.error(exception.getMessage());
-                        }
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
                     }
                 });
 
