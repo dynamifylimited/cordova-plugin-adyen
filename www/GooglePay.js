@@ -20,7 +20,7 @@ exports.canMakePayments = function(successCallback, errorCallback) {
         }, function(message) {
             executeCallback(errorCallback, message);
             reject(message);
-        }, 'ApplePayGooglePay', 'canMakePayments', []);
+        }, 'GooglePay', 'canMakePayments', []);
     });
 };
 
@@ -39,6 +39,6 @@ exports.makePaymentRequest = function(order, successCallback, errorCallback) {
         }, function(message) {
             executeCallback(errorCallback, message);
             reject(message);
-        }, 'ApplePayGooglePay', 'makePaymentRequest', [order]);
+        }, 'GooglePay', 'makePaymentRequest', [order]);
     });
 };
