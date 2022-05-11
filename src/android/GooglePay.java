@@ -38,7 +38,9 @@ public class GooglePay extends CordovaPlugin {
             Arrays.asList(
                     "MASTERCARD",
                     "VISA",
-					"AMEX"
+					"AMEX",
+                    "DISCOVER",
+                    "JCB"
             )
     );
 
