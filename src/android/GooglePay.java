@@ -38,7 +38,7 @@ public class GooglePay extends CordovaPlugin {
             Arrays.asList(
                     "MASTERCARD",
                     "VISA",
-					"AMEX",
+                    "AMEX",
                     "DISCOVER",
                     "JCB"
             )
@@ -46,13 +46,13 @@ public class GooglePay extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-		
-		String environment = preferences.getString("GooglePayEnvironment", "production");
-		
-		Wallet.WalletOptions walletOptions = new Wallet.WalletOptions.Builder().setEnvironment(
-		environment.equals("production") ? WalletConstants.ENVIRONMENT_PRODUCTION : WalletConstants.ENVIRONMENT_TEST
-		).build();
-        
+
+        String environment = preferences.getString("GooglePayEnvironment", "production");
+
+        Wallet.WalletOptions walletOptions = new Wallet.WalletOptions.Builder().setEnvironment(
+                environment.equals("production") ? WalletConstants.ENVIRONMENT_PRODUCTION : WalletConstants.ENVIRONMENT_TEST
+        ).build();
+
         Activity activity = cordova.getActivity();
 
         paymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
