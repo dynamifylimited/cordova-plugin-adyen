@@ -6,8 +6,8 @@ dependencies {
      Google Pay API library. Your app may choose a dependency greater than the value below.
      See https://developers.google.com/pay/api/android/guides/setup#dependencies for more info.
      */
-      implementation 'com.google.android.gms:play-services-wallet:16.0.1'
-      implementation 'com.android.support:appcompat-v7:$ANDROID_SUPPORT_VERSION'
-      implementation "net.sourceforge.streamsupport:streamsupport:1.5.1"	
+    //   implementation 'com.google.android.gms:play-services-wallet:16.0.1'
+    //   implementation 'com.android.support:appcompat-v7:$ANDROID_SUPPORT_VERSION'
+    //   implementation "net.sourceforge.streamsupport:streamsupport:1.5.1"	
       implementation 'com.judopay:judokit-android:4.1.4'
 }

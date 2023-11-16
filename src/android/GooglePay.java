@@ -3,10 +3,10 @@ package com.plugin.googlepay;
 import android.app.Activity;
 import android.content.Intent;
 import androidx.annotation.NonNull;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.wallet.*;
+// import com.google.android.gms.common.api.Status;
+// import com.google.android.gms.tasks.OnCompleteListener;
+// import com.google.android.gms.tasks.Task;
+// import com.google.android.gms.wallet.*;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -36,48 +36,48 @@ import java.util.Arrays;
  */
 public class GooglePay extends CordovaPlugin {
     private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
-    private PaymentsClient paymentsClient;
+    // private PaymentsClient paymentsClient;
 
     private CallbackContext callbackContext;
 
-    private JSONArray allowedCardAuthMethods = new JSONArray(
-            Arrays.asList(
-                    "CRYPTOGRAM_3DS",
-                    "PAN_ONLY"
-            )
-    );
+    // private JSONArray allowedCardAuthMethods = new JSONArray(
+    //         Arrays.asList(
+    //                 "CRYPTOGRAM_3DS",
+    //                 "PAN_ONLY"
+    //         )
+    // );
 
-    private JSONArray allowedCardNetworks = new JSONArray(
-            Arrays.asList(
-                    "MASTERCARD",
-                    "VISA",
-                    "AMEX",
-                    "DISCOVER",
-                    "JCB"
-            )
-    );
+    // private JSONArray allowedCardNetworks = new JSONArray(
+    //         Arrays.asList(
+    //                 "MASTERCARD",
+    //                 "VISA",
+    //                 "AMEX",
+    //                 "DISCOVER",
+    //                 "JCB"
+    //         )
+    // );
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
-        String environment = preferences.getString("GooglePayEnvironment", "production");
+        // String environment = preferences.getString("GooglePayEnvironment", "production");
 
-        Wallet.WalletOptions walletOptions = new Wallet.WalletOptions.Builder().setEnvironment(
-                environment.equals("production") ? WalletConstants.ENVIRONMENT_PRODUCTION : WalletConstants.ENVIRONMENT_TEST
-        ).build();
+        // Wallet.WalletOptions walletOptions = new Wallet.WalletOptions.Builder().setEnvironment(
+        //         environment.equals("production") ? WalletConstants.ENVIRONMENT_PRODUCTION : WalletConstants.ENVIRONMENT_TEST
+        // ).build();
 
-        Activity activity = cordova.getActivity();
+        // Activity activity = cordova.getActivity();
 
-        paymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
+        // paymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
 
-        if (action.equals("canMakePayments")) {
-            this.canMakePayments(args, callbackContext);
-            return true;
-        }
-        if (action.equals("makePaymentRequest")) {
-            this.makePaymentRequest(args, callbackContext);
-            return true;
-        }
+        // if (action.equals("canMakePayments")) {
+        //     this.canMakePayments(args, callbackContext);
+        //     return true;
+        // }
+        // if (action.equals("makePaymentRequest")) {
+        //     this.makePaymentRequest(args, callbackContext);
+        //     return true;
+        // }
         if (action.equals("test")) {
             this.test(args, callbackContext);
             return true;
@@ -121,75 +121,71 @@ public class GooglePay extends CordovaPlugin {
         }
     }
 
-    private void test(JSONArray args, CallbackContext callbackContext) throws JSONException {
-         callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "this is a test"));
-    }
+    // private void canMakePayments(JSONArray args, CallbackContext callbackContext) throws JSONException {
 
-    private void canMakePayments(JSONArray args, CallbackContext callbackContext) throws JSONException {
+    //     // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
+    //     // OnCompleteListener to be triggered when the result of the call is known.
+    //     IsReadyToPayRequest request = IsReadyToPayRequest.newBuilder()
+    //             .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_TOKENIZED_CARD)
+    //             .build();
 
-        // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
-        // OnCompleteListener to be triggered when the result of the call is known.
-        IsReadyToPayRequest request = IsReadyToPayRequest.newBuilder()
-                .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_TOKENIZED_CARD)
-                .build();
+    //     Task<Boolean> task = paymentsClient.isReadyToPay(request);
 
-        Task<Boolean> task = paymentsClient.isReadyToPay(request);
+    //     task.addOnCompleteListener(cordova.getActivity(),
+    //             new OnCompleteListener<Boolean>() {
+    //                 @Override
+    //                 public void onComplete(@NonNull Task<Boolean> task) {
+    //                     boolean result = task.isSuccessful();
 
-        task.addOnCompleteListener(cordova.getActivity(),
-                new OnCompleteListener<Boolean>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Boolean> task) {
-                        boolean result = task.isSuccessful();
+    //                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+    //                 }
+    //             });
 
-                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
-                    }
-                });
+    // }
 
-    }
+    // private void makePaymentRequest(JSONArray args, CallbackContext callbackContext) throws JSONException {
+    //     JSONObject argss = args.getJSONObject(0);
+    //     Activity activity = cordova.getActivity();
+    //     cordova.setActivityResultCallback(this);
 
-    private void makePaymentRequest(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        JSONObject argss = args.getJSONObject(0);
-        Activity activity = cordova.getActivity();
-        cordova.setActivityResultCallback(this);
+    //     this.callbackContext = callbackContext;
 
-        this.callbackContext = callbackContext;
+    //     try {
+    //         String price = getParam(argss, "amount");
+    //         String currencyCode = getParam(argss, "currencyCode");
+    //         String countryCode = getParam(argss, "countryCode");
 
-        try {
-            String price = getParam(argss, "amount");
-            String currencyCode = getParam(argss, "currencyCode");
-            String countryCode = getParam(argss, "countryCode");
+    //         String gateway = getParam(argss, "gateway");
+    //         String merchantId = getParam(argss, "merchantId");
+    //         String gpMerchantId = getParam(argss, "gpMerchantId");
+    //         String gpMerchantName = getParam(argss, "gpMerchantName");
 
-            String gateway = getParam(argss, "gateway");
-            String merchantId = getParam(argss, "merchantId");
-            String gpMerchantId = getParam(argss, "gpMerchantId");
-            String gpMerchantName = getParam(argss, "gpMerchantName");
-
-            JSONObject paymentDataRequest = getBaseRequest();
-            paymentDataRequest.put(
-                    "allowedPaymentMethods", new JSONArray().put(getCardPaymentMethod(gateway, merchantId)));
-            paymentDataRequest.put("transactionInfo", getTransactionInfo(price, currencyCode, countryCode));
-            paymentDataRequest.put("merchantInfo",
-                    new JSONObject()
-                            .put("merchantName", gpMerchantName)
-                            .put("merchantId", gpMerchantId)
-            );
+    //         JSONObject paymentDataRequest = getBaseRequest();
+    //         paymentDataRequest.put(
+    //                 "allowedPaymentMethods", new JSONArray().put(getCardPaymentMethod(gateway, merchantId)));
+    //         paymentDataRequest.put("transactionInfo", getTransactionInfo(price, currencyCode, countryCode));
+    //         paymentDataRequest.put("merchantInfo",
+    //                 new JSONObject()
+    //                         .put("merchantName", gpMerchantName)
+    //                         .put("merchantId", gpMerchantId)
+    //         );
 
 
-            String requestJson = paymentDataRequest.toString();
+    //         String requestJson = paymentDataRequest.toString();
 
-            PaymentDataRequest request = PaymentDataRequest.fromJson(requestJson);
+    //         PaymentDataRequest request = PaymentDataRequest.fromJson(requestJson);
 
-            // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-            // AutoResolveHelper to wait for the user interacting with it. Once completed,
-            // onActivityResult will be called with the result.
-            if (request != null) {
-                AutoResolveHelper.resolveTask(paymentsClient.loadPaymentData(request), activity, LOAD_PAYMENT_DATA_REQUEST_CODE);
-            }
+    //         // Since loadPaymentData may show the UI asking the user to select a payment method, we use
+    //         // AutoResolveHelper to wait for the user interacting with it. Once completed,
+    //         // onActivityResult will be called with the result.
+    //         if (request != null) {
+    //             AutoResolveHelper.resolveTask(paymentsClient.loadPaymentData(request), activity, LOAD_PAYMENT_DATA_REQUEST_CODE);
+    //         }
 
-        } catch (JSONException e) {
-            callbackContext.error(e.getMessage());
-        }
-    }
+    //     } catch (JSONException e) {
+    //         callbackContext.error(e.getMessage());
+    //     }
+    // }
 
 
     /**
@@ -205,15 +201,15 @@ public class GooglePay extends CordovaPlugin {
      * @see <a href=
      * "https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
      */
-    private static JSONObject getGatewayTokenizationSpecification(String gateway, String gatewayMerchantId) throws JSONException {
-        return new JSONObject() {{
-            put("type", "PAYMENT_GATEWAY");
-            put("parameters", new JSONObject() {{
-                put("gateway", gateway);
-                put("gatewayMerchantId", gatewayMerchantId);
-            }});
-        }};
-    }
+    // private static JSONObject getGatewayTokenizationSpecification(String gateway, String gatewayMerchantId) throws JSONException {
+    //     return new JSONObject() {{
+    //         put("type", "PAYMENT_GATEWAY");
+    //         put("parameters", new JSONObject() {{
+    //             put("gateway", gateway);
+    //             put("gatewayMerchantId", gatewayMerchantId);
+    //         }});
+    //     }};
+    // }
 
 
     /**
@@ -227,17 +223,17 @@ public class GooglePay extends CordovaPlugin {
      * @see <a
      * href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
      */
-    private JSONObject getBaseCardPaymentMethod() throws JSONException {
-        JSONObject cardPaymentMethod = new JSONObject();
-        cardPaymentMethod.put("type", "CARD");
+    // private JSONObject getBaseCardPaymentMethod() throws JSONException {
+    //     JSONObject cardPaymentMethod = new JSONObject();
+    //     cardPaymentMethod.put("type", "CARD");
 
-        JSONObject parameters = new JSONObject();
-        parameters.put("allowedAuthMethods", allowedCardAuthMethods);
-        parameters.put("allowedCardNetworks", allowedCardNetworks);
-        cardPaymentMethod.put("parameters", parameters);
+    //     JSONObject parameters = new JSONObject();
+    //     parameters.put("allowedAuthMethods", allowedCardAuthMethods);
+    //     parameters.put("allowedCardNetworks", allowedCardNetworks);
+    //     cardPaymentMethod.put("parameters", parameters);
 
-        return cardPaymentMethod;
-    }
+    //     return cardPaymentMethod;
+    // }
 
     /**
      * Describe the expected returned payment data for the CARD payment method
@@ -247,16 +243,16 @@ public class GooglePay extends CordovaPlugin {
      * @see <a
      * href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
      */
-    private JSONObject getCardPaymentMethod(String gateway, String gatewayMerchantId) throws JSONException {
-        JSONObject cardPaymentMethod = getBaseCardPaymentMethod();
-        cardPaymentMethod.put("tokenizationSpecification", getGatewayTokenizationSpecification(gateway, gatewayMerchantId));
+    // private JSONObject getCardPaymentMethod(String gateway, String gatewayMerchantId) throws JSONException {
+    //     JSONObject cardPaymentMethod = getBaseCardPaymentMethod();
+    //     cardPaymentMethod.put("tokenizationSpecification", getGatewayTokenizationSpecification(gateway, gatewayMerchantId));
 
-        return cardPaymentMethod;
-    }
+    //     return cardPaymentMethod;
+    // }
 
-    private static JSONObject getBaseRequest() throws JSONException {
-        return new JSONObject().put("apiVersion", 2).put("apiVersionMinor", 0);
-    }
+    // private static JSONObject getBaseRequest() throws JSONException {
+    //     return new JSONObject().put("apiVersion", 2).put("apiVersionMinor", 0);
+    // }
 
     /**
      * Provide Google Pay API with a payment amount, currency, and amount status.
@@ -266,27 +262,27 @@ public class GooglePay extends CordovaPlugin {
      * @see <a
      * href="https://developers.google.com/pay/api/android/reference/object#TransactionInfo">TransactionInfo</a>
      */
-    private JSONObject getTransactionInfo(String price, String currencyCode, String countryCode) throws JSONException {
-        JSONObject transactionInfo = new JSONObject();
-        transactionInfo.put("totalPrice", price);
-        transactionInfo.put("totalPriceStatus", "FINAL");
-        transactionInfo.put("countryCode", countryCode);
-        transactionInfo.put("currencyCode", currencyCode);
-        transactionInfo.put("checkoutOption", "COMPLETE_IMMEDIATE_PURCHASE");
+    // private JSONObject getTransactionInfo(String price, String currencyCode, String countryCode) throws JSONException {
+    //     JSONObject transactionInfo = new JSONObject();
+    //     transactionInfo.put("totalPrice", price);
+    //     transactionInfo.put("totalPriceStatus", "FINAL");
+    //     transactionInfo.put("countryCode", countryCode);
+    //     transactionInfo.put("currencyCode", currencyCode);
+    //     transactionInfo.put("checkoutOption", "COMPLETE_IMMEDIATE_PURCHASE");
 
-        return transactionInfo;
-    }
+    //     return transactionInfo;
+    // }
 
 
-    private String getParam(JSONObject args, String name) throws JSONException {
-        String param = args.getString(name);
+    // private String getParam(JSONObject args, String name) throws JSONException {
+    //     String param = args.getString(name);
 
-        if (param == null || param.length() == 0) {
-            throw new JSONException(String.format("%s is required", name));
-        }
+    //     if (param == null || param.length() == 0) {
+    //         throw new JSONException(String.format("%s is required", name));
+    //     }
 
-        return param;
-    }
+    //     return param;
+    // }
 
 
 
