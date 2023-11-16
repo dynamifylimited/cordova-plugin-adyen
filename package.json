@@ -1,16 +1,16 @@
 {
-  "name": "cordova-plugin-freedompay-googlepay",
+  "name": "cordova-plugin-judopay-googlepay",
   "version": "0.0.1",
-  "description": "Cordova plugin for integrating Freedompay Google Pay in modern cordova apps",
+  "description": "Cordova plugin for integrating Judopay Google Pay in modern cordova apps",
   "cordova": {
-    "id": "cordova-plugin-freedompay-googlepay",
+    "id": "cordova-plugin-judopay-googlepay",
     "platforms": [
       "android"
     ]
   },
   "keywords": [
     "ecosystem:cordova",
-	"cordova-android",
+	  "cordova-android",
     "googlepay",
     "google pay"
   ],
@@ -18,7 +18,7 @@
     "type": "git",
     "url": "https://github.com/dynamifylimited/cordova-plugin-freedompay-googlepay.git"
   },
-  "author": "Pritam Satsangi",
+  "author": "Abhinav Priyadarshi",
   "license": "ISC",
   "homepage": "https://github.com/dynamifylimited/cordova-plugin-freedompay-googlepay#readme"
 }

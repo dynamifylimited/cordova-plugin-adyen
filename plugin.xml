@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-freedompay-googlepay"
+<plugin id="cordova-plugin-judopay-googlepay"
 		version="0.0.1"
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns="http://apache.org/cordova/ns/plugins/1.0">
-	<name>FreedompayGooglePay</name>
-	<js-module name="FreedompayGooglePay"
+	<name>JudopayGooglePay</name>
+	<js-module name="JudopayGooglePay"
 			   src="www/GooglePay.js">
-		<clobbers target="cordova.plugins.FreedompayGooglePay" />
+		<clobbers target="cordova.plugins.JudopayGooglePay" />
 	</js-module>
 	<platform name="android">
 		<config-file parent="/*/application" target="AndroidManifest.xml">

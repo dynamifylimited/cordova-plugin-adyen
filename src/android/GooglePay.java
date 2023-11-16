@@ -14,6 +14,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.judopay.judokit.android.Judo;
+import com.judopay.judokit.android.JudoActivity;
+import com.judopay.judokit.android.api.model.PaymentSessionAuthorization;
+import com.judopay.judokit.android.model.Amount;
+import com.judopay.judokit.android.model.Currency;
+import com.judopay.judokit.android.model.GooglePayConfiguration;
+import com.judopay.judokit.android.model.PaymentWidgetType;
+import com.judopay.judokit.android.model.Reference;
+import com.judopay.judokit.android.model.googlepay.GooglePayAddressFormat;
+import com.judopay.judokit.android.model.googlepay.GooglePayBillingAddressParameters;
+import com.judopay.judokit.android.model.googlepay.GooglePayEnvironment;
+import com.judopay.judokit.android.model.googlepay.GooglePayShippingAddressParameters;
+
 import java.util.Arrays;
 
 //import java.util.concurrent.Executor;
@@ -65,6 +78,11 @@ public class GooglePay extends CordovaPlugin {
             this.makePaymentRequest(args, callbackContext);
             return true;
         }
+        if (action.equals("test")) {
+            this.test(args, callbackContext);
+            return true;
+        }
+
         return false;
     }
 
@@ -101,6 +119,10 @@ public class GooglePay extends CordovaPlugin {
                 callbackContext.error(status.getStatusMessage());
                 break;
         }
+    }
+
+    private void test(JSONArray args, CallbackContext callbackContext) throws JSONException {
+         callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "this is a test"));
     }
 
     private void canMakePayments(JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -264,5 +286,57 @@ public class GooglePay extends CordovaPlugin {
         }
 
         return param;
+    }
+
+
+
+    private void test(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        Amount amount = new Amount.Builder()
+                .setAmount("150.50")
+                .setCurrency(Currency.GBP)
+                .build();
+
+        Reference reference = new Reference.Builder()
+                .setConsumerReference("test")
+                .build();
+
+
+        PaymentSessionAuthorization paymentSessionAuthorization = new PaymentSessionAuthorization.Builder()
+                .setApiToken("0fTjMF2k9fnbpx3c")
+                .setPaymentSession("pr_12322")
+                .build();
+
+        GooglePayBillingAddressParameters billingAddressParams = new GooglePayBillingAddressParameters(
+                 GooglePayAddressFormat.MIN,
+                true
+        );
+
+        GooglePayShippingAddressParameters shippingAddressParams = new GooglePayShippingAddressParameters(
+                null, true
+        );
+
+        GooglePayConfiguration googlePayConfiguration = new GooglePayConfiguration.Builder()
+                .setTransactionCountryCode("GB")
+                .setEnvironment(GooglePayEnvironment.TEST)
+                .setIsEmailRequired(true)
+                .setIsBillingAddressRequired(true)
+                .setBillingAddressParameters(billingAddressParams)
+                .setIsShippingAddressRequired(true)
+                .setShippingAddressParameters(shippingAddressParams)
+                .build();
+
+
+       Judo judo = new Judo.Builder(PaymentWidgetType.GOOGLE_PAY)
+                .setAmount(amount)
+                .setJudoId("100895721")
+                .setGooglePayConfiguration(googlePayConfiguration)
+                .setAuthorization(paymentSessionAuthorization)
+                .setReference(reference)
+                .build();
+
+       Intent intent = new Intent(this.cordova.getActivity().getApplicationContext(), JudoActivity.class);
+       intent.putExtra("com.judopay.judokit.android.options", judo);
+       cordova.getActivity().startActivityForResult(intent, 1);
+
     }
 }
