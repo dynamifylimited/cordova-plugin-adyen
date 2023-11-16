@@ -3,10 +3,10 @@ package com.plugin.googlepay;
 import android.app.Activity;
 import android.content.Intent;
 import androidx.annotation.NonNull;
-// import com.google.android.gms.common.api.Status;
-// import com.google.android.gms.tasks.OnCompleteListener;
-// import com.google.android.gms.tasks.Task;
-// import com.google.android.gms.wallet.*;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wallet.*;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -74,14 +74,14 @@ public class GooglePay extends CordovaPlugin {
         //     this.canMakePayments(args, callbackContext);
         //     return true;
         // }
-        // if (action.equals("makePaymentRequest")) {
-        //     this.makePaymentRequest(args, callbackContext);
-        //     return true;
-        // }
-        if (action.equals("test")) {
-            this.test(args, callbackContext);
+        if (action.equals("makePaymentRequest")) {
+            this.makePaymentRequest(args, callbackContext);
             return true;
         }
+        // if (action.equals("test")) {
+        //     this.test(args, callbackContext);
+        //     return true;
+        // }
 
         return false;
     }
@@ -143,49 +143,73 @@ public class GooglePay extends CordovaPlugin {
 
     // }
 
-    // private void makePaymentRequest(JSONArray args, CallbackContext callbackContext) throws JSONException {
-    //     JSONObject argss = args.getJSONObject(0);
-    //     Activity activity = cordova.getActivity();
-    //     cordova.setActivityResultCallback(this);
+    private void makePaymentRequest(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        JSONObject argss = args.getJSONObject(0);
+        Activity activity = cordova.getActivity();
+        cordova.setActivityResultCallback(this);
 
-    //     this.callbackContext = callbackContext;
+        this.callbackContext = callbackContext;
 
-    //     try {
-    //         String price = getParam(argss, "amount");
-    //         String currencyCode = getParam(argss, "currencyCode");
-    //         String countryCode = getParam(argss, "countryCode");
+        try {
+            String price = getParam(argss, "amount");
+            String currencyCode = getParam(argss, "currencyCode");
+            String judoId = getParam(argss, "judoId");
+            String token = getParam(argss, "token");
+            String countryCode = getParam(argss, "countryCode");
+            String paymentSession = getParam(argss, "paymentSession");
+            String consumerReference = getParam(argss, "consumerReference");
 
-    //         String gateway = getParam(argss, "gateway");
-    //         String merchantId = getParam(argss, "merchantId");
-    //         String gpMerchantId = getParam(argss, "gpMerchantId");
-    //         String gpMerchantName = getParam(argss, "gpMerchantName");
+            Amount amount = new Amount.Builder()
+            .setAmount(price)
+            .setCurrency(Currency.GBP)
+            .build();
 
-    //         JSONObject paymentDataRequest = getBaseRequest();
-    //         paymentDataRequest.put(
-    //                 "allowedPaymentMethods", new JSONArray().put(getCardPaymentMethod(gateway, merchantId)));
-    //         paymentDataRequest.put("transactionInfo", getTransactionInfo(price, currencyCode, countryCode));
-    //         paymentDataRequest.put("merchantInfo",
-    //                 new JSONObject()
-    //                         .put("merchantName", gpMerchantName)
-    //                         .put("merchantId", gpMerchantId)
-    //         );
+            Reference reference = new Reference.Builder()
+                    .setConsumerReference(consumerReference)
+                    .build();
 
 
-    //         String requestJson = paymentDataRequest.toString();
+            PaymentSessionAuthorization paymentSessionAuthorization = new PaymentSessionAuthorization.Builder()
+                    .setApiToken(token)
+                    .setPaymentSession(paymentSession)
+                    .build();
 
-    //         PaymentDataRequest request = PaymentDataRequest.fromJson(requestJson);
+            GooglePayBillingAddressParameters billingAddressParams = new GooglePayBillingAddressParameters(
+                    GooglePayAddressFormat.MIN,
+                    true
+            );
 
-    //         // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-    //         // AutoResolveHelper to wait for the user interacting with it. Once completed,
-    //         // onActivityResult will be called with the result.
-    //         if (request != null) {
-    //             AutoResolveHelper.resolveTask(paymentsClient.loadPaymentData(request), activity, LOAD_PAYMENT_DATA_REQUEST_CODE);
-    //         }
+            GooglePayShippingAddressParameters shippingAddressParams = new GooglePayShippingAddressParameters(
+                    null, true
+            );
 
-    //     } catch (JSONException e) {
-    //         callbackContext.error(e.getMessage());
-    //     }
-    // }
+            GooglePayConfiguration googlePayConfiguration = new GooglePayConfiguration.Builder()
+                    .setTransactionCountryCode(countryCode)
+                    .setEnvironment(GooglePayEnvironment.TEST)
+                    .setIsEmailRequired(true)
+                    .setIsBillingAddressRequired(true)
+                    .setBillingAddressParameters(billingAddressParams)
+                    .setIsShippingAddressRequired(true)
+                    .setShippingAddressParameters(shippingAddressParams)
+                    .build();
+
+
+            Judo judo = new Judo.Builder(PaymentWidgetType.GOOGLE_PAY)
+                        .setAmount(amount)
+                        .setJudoId(judoId)
+                        .setGooglePayConfiguration(googlePayConfiguration)
+                        .setAuthorization(paymentSessionAuthorization)
+                        .setReference(reference)
+                        .build();
+
+            Intent intent = new Intent(this.cordova.getActivity().getApplicationContext(), JudoActivity.class);
+            intent.putExtra("com.judopay.judokit.android.options", judo);
+            cordova.getActivity().startActivityForResult(intent, 1);
+
+        } catch (JSONException e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
 
 
     /**
@@ -274,65 +298,14 @@ public class GooglePay extends CordovaPlugin {
     // }
 
 
-    // private String getParam(JSONObject args, String name) throws JSONException {
-    //     String param = args.getString(name);
+    private String getParam(JSONObject args, String name) throws JSONException {
+        String param = args.getString(name);
 
-    //     if (param == null || param.length() == 0) {
-    //         throw new JSONException(String.format("%s is required", name));
-    //     }
+        if (param == null || param.length() == 0) {
+            throw new JSONException(String.format("%s is required", name));
+        }
 
-    //     return param;
-    // }
-
-
-
-    private void test(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Amount amount = new Amount.Builder()
-                .setAmount("150.50")
-                .setCurrency(Currency.GBP)
-                .build();
-
-        Reference reference = new Reference.Builder()
-                .setConsumerReference("test")
-                .build();
-
-
-        PaymentSessionAuthorization paymentSessionAuthorization = new PaymentSessionAuthorization.Builder()
-                .setApiToken("0fTjMF2k9fnbpx3c")
-                .setPaymentSession("pr_12322")
-                .build();
-
-        GooglePayBillingAddressParameters billingAddressParams = new GooglePayBillingAddressParameters(
-                 GooglePayAddressFormat.MIN,
-                true
-        );
-
-        GooglePayShippingAddressParameters shippingAddressParams = new GooglePayShippingAddressParameters(
-                null, true
-        );
-
-        GooglePayConfiguration googlePayConfiguration = new GooglePayConfiguration.Builder()
-                .setTransactionCountryCode("GB")
-                .setEnvironment(GooglePayEnvironment.TEST)
-                .setIsEmailRequired(true)
-                .setIsBillingAddressRequired(true)
-                .setBillingAddressParameters(billingAddressParams)
-                .setIsShippingAddressRequired(true)
-                .setShippingAddressParameters(shippingAddressParams)
-                .build();
-
-
-       Judo judo = new Judo.Builder(PaymentWidgetType.GOOGLE_PAY)
-                .setAmount(amount)
-                .setJudoId("100895721")
-                .setGooglePayConfiguration(googlePayConfiguration)
-                .setAuthorization(paymentSessionAuthorization)
-                .setReference(reference)
-                .build();
-
-       Intent intent = new Intent(this.cordova.getActivity().getApplicationContext(), JudoActivity.class);
-       intent.putExtra("com.judopay.judokit.android.options", judo);
-       cordova.getActivity().startActivityForResult(intent, 1);
-
+        return param;
     }
+
 }

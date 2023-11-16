@@ -43,15 +43,3 @@ exports.makePaymentRequest = function(order, successCallback, errorCallback) {
     });
 };
 
-
-exports.test = function(order, successCallback, errorCallback) {
-    return new Promise(function(resolve, reject) {
-        exec(function(message) {
-            executeCallback(successCallback, message);
-            resolve(message);
-        }, function(message) {
-            executeCallback(errorCallback, message);
-            reject(message);
-        }, 'GooglePay', 'test', [order]);
-    });
-};
