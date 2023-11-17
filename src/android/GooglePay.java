@@ -36,6 +36,15 @@ import java.util.Arrays;
  */
 public class GooglePay extends CordovaPlugin {
     private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
+    private static final int PAYMENT_CANCELLED = 3;
+    private static final int PAYMENT_SUCCESS = 2;
+    private static final int PAYMENT_ERROR = 4;
+
+    private static final int JUDO_PAYMENT_WIDGET_REQUEST_CODE = 1;
+    private static final String JUDO_RESULT =  "com.judopay.judokit.android.result";
+
+    private static final String JUDO_ERROR =  "com.judopay.judokit.android.error";
+    private static final String JUDO_OPTIONS = "com.judopay.judokit.android.options";
     // private PaymentsClient paymentsClient;
 
     private CallbackContext callbackContext;
@@ -98,26 +107,21 @@ public class GooglePay extends CordovaPlugin {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // value passed in AutoResolveHelper
-        if (requestCode != LOAD_PAYMENT_DATA_REQUEST_CODE) {
-            return;
-        }
+        if(requestCode == JUDO_PAYMENT_WIDGET_REQUEST_CODE) {
+            switch (resultCode) {
+                case PAYMENT_CANCELLED:
+                    callbackContext.error("User cancelled the payment");
+                    break;
 
-        switch (resultCode) {
+                case PAYMENT_SUCCESS:
+                    callbackContext.success(data.getParcelableExtra(JUDO_RESULT, JudoResult.class).getMessage());
+                    break;
 
-            case Activity.RESULT_OK:
-                PaymentData paymentData = PaymentData.getFromIntent(data);
-                String paymentInfo = paymentData.toJson();
-                callbackContext.success(paymentInfo);
-                break;
+                case PAYMENT_ERROR:
+                    callbackContext.error(data.getParcelableExtra(JUDO_ERROR, JudoError.class).getMessage());
+                    break;
+            }
 
-            case Activity.RESULT_CANCELED:
-                callbackContext.error("Payment cancelled");
-                break;
-
-            case AutoResolveHelper.RESULT_ERROR:
-                Status status = AutoResolveHelper.getStatusFromIntent(data);
-                callbackContext.error(status.getStatusMessage());
-                break;
         }
     }
 
@@ -203,8 +207,9 @@ public class GooglePay extends CordovaPlugin {
                         .build();
 
             Intent intent = new Intent(this.cordova.getActivity().getApplicationContext(), JudoActivity.class);
-            intent.putExtra("com.judopay.judokit.android.options", judo);
-            cordova.getActivity().startActivityForResult(intent, 1);
+            intent.putExtra(JUDO_OPTIONS, judo);
+            cordova.setActivityResultCallback(this);
+            cordova.getActivity().startActivityForResult(intent, JUDO_PAYMENT_WIDGET_REQUEST_CODE);
 
         } catch (JSONException e) {
             callbackContext.error(e.getMessage());
