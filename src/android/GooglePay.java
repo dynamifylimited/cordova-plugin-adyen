@@ -20,6 +20,8 @@ import com.judopay.judokit.android.api.model.PaymentSessionAuthorization;
 import com.judopay.judokit.android.model.Amount;
 import com.judopay.judokit.android.model.Currency;
 import com.judopay.judokit.android.model.GooglePayConfiguration;
+import com.judopay.judokit.android.model.JudoError;
+import com.judopay.judokit.android.model.JudoResult;
 import com.judopay.judokit.android.model.PaymentWidgetType;
 import com.judopay.judokit.android.model.Reference;
 import com.judopay.judokit.android.model.googlepay.GooglePayAddressFormat;
