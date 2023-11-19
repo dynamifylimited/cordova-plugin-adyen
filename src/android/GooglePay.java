@@ -40,7 +40,7 @@ public class GooglePay extends CordovaPlugin {
     private static final int PAYMENT_SUCCESS = 2;
     private static final int PAYMENT_ERROR = 4;
     private static final int JUDO_PAYMENT_WIDGET_REQUEST_CODE = 1;
-    
+
     private static final String JUDO_RESULT =  "com.judopay.judokit.android.result";
     private static final String JUDO_ERROR =  "com.judopay.judokit.android.error";
     private static final String JUDO_OPTIONS = "com.judopay.judokit.android.options";
@@ -131,7 +131,7 @@ public class GooglePay extends CordovaPlugin {
 
             GooglePayConfiguration googlePayConfiguration = new GooglePayConfiguration.Builder()
                     .setTransactionCountryCode(countryCode)
-                    .setEnvironment(GooglePayEnvironment.TEST)
+                    .setEnvironment(GooglePayEnvironment.PRODUCTION)
                     .setIsEmailRequired(true)
                     .setIsBillingAddressRequired(true)
                     .setBillingAddressParameters(billingAddressParams)
