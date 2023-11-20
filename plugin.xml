@@ -14,10 +14,10 @@
 		</config-file>
 		<config-file target="res/xml/config.xml" parent="/*">
 			<feature name="GooglePay">
-				<param name="android-package" value="com.plugin.googlepay.GooglePay"/>
+				<param name="android-package" value="com.plugin.dynamify.JudopayGooglePay"/>
 			</feature>
 		</config-file>
-		<source-file src="src/android/GooglePay.java" target-dir="src/com/plugin/googlepay" />
+		<source-file src="src/android/JudopayGooglePay.java" target-dir="src/com/plugin/judopaygooglepay" />
 		<framework src="src/android/build.gradle" custom="true" type="gradleReference" />
 	</platform>
 </plugin>
