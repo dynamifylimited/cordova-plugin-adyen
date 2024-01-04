@@ -77,11 +77,11 @@ public class JudopayGooglePay extends CordovaPlugin {
                     break;
 
                 case PAYMENT_SUCCESS:
-                    callbackContext.success(data.getParcelableExtra(JUDO_RESULT, JudoResult.class).getReceiptId());
+                    callbackContext.success(data.getParcelableExtra(JUDO_RESULT).getReceiptId());
                     break;
 
                 case PAYMENT_ERROR:
-                    callbackContext.error(data.getParcelableExtra(JUDO_ERROR, JudoError.class).getMessage());
+                    callbackContext.error(data.getParcelableExtra(JUDO_ERROR).getMessage());
                     break;
             }
 
