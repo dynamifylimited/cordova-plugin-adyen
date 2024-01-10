@@ -1,6 +1,6 @@
 # Cordova Square Android plugin
 
-> A plugin for Suquare pos implementation for android. 
+> A plugin for Square pos implementation for android. 
 
 ## Installation
 
