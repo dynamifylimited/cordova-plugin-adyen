@@ -1,4 +1,4 @@
-# Cordova Suare Android plugin
+# Cordova Square Android plugin
 
 > A plugin for Suquare pos implementation for android. 
 
