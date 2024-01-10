@@ -1,6 +1,6 @@
-# Cordova Judopay Google Pay integration
+# Cordova Suare Android plugin
 
-> A plugin for judopay googlepay implementation for android.. 
+> A plugin for Suquare pos implementation for android. 
 
 ## Installation
 
