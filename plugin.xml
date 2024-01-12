@@ -3,21 +3,23 @@
 		version="0.0.1"
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns="http://apache.org/cordova/ns/plugins/1.0">
-	<name>JudopayGooglePay</name>
-	<js-module name="JudopayGooglePay"
-			   src="www/GooglePay.js">
-		<clobbers target="cordova.plugins.JudopayGooglePay" />
+	<name>Square</name>
+	<js-module name="Square"
+			   src="www/square.js">
+		<clobbers target="cordova.plugins.square" />
 	</js-module>
 	<platform name="android">
 		<config-file parent="/*/application" target="AndroidManifest.xml">
-			<meta-data android:name="com.google.android.gms.wallet.api.enabled" android:value="true" />
+			<queries>
+    			<package android:name="com.squareup" />
+			</queries>
 		</config-file>
 		<config-file target="res/xml/config.xml" parent="/*">
-			<feature name="GooglePay">
-				<param name="android-package" value="com.plugin.dynamify.JudopayGooglePay"/>
+			<feature name="Square">
+				<param name="android-package" value="com.plugin.dynamify.Square"/>
 			</feature>
 		</config-file>
-		<source-file src="src/android/JudopayGooglePay.java" target-dir="src/com/plugin/judopaygooglepay" />
+		<source-file src="src/android/Square.java" target-dir="src/com/plugin/Square" />
 		<framework src="src/android/build.gradle" custom="true" type="gradleReference" />
 	</platform>
 </plugin>
