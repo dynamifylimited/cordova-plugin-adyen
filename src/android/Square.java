@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package com.plugin.Square;
+package com.dynamify.plugin.square;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
