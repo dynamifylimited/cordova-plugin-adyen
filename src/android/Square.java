@@ -17,17 +17,17 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package com.squareup.plugin.square;
+package com.plugin.Square;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.util.Log;
 
-import com.squareup.sdk.register.ChargeRequest;
-import com.squareup.sdk.register.CurrencyCode;
-import com.squareup.sdk.register.RegisterClient;
-import com.squareup.sdk.register.RegisterSdk;
+import com.squareup.sdk.pos.CurrencyCode;
+import com.squareup.sdk.pos.ChargeRequest;
+import com.squareup.sdk.pos.PosClient;
+import com.squareup.sdk.pos.PosSdk;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -76,7 +76,7 @@ public class Square extends CordovaPlugin {
     private String metadata;
 
     private static final Random RANDOM = new Random();
-    private RegisterClient registerClient;
+    private PosClient registerClient;
     private CallbackContext requestCallback;
     private int requestCode = Math.abs(RANDOM.nextInt());
 
@@ -195,7 +195,7 @@ public class Square extends CordovaPlugin {
 
         // Replace "applicationId" with your Square-assigned application ID,
         // available from the application dashboard.
-        registerClient = RegisterSdk.createClient(cordova.getActivity(), applicationId);
+        registerClient = PosSdk.createClient(cordova.getActivity(), applicationId);
 
         // You specify all of the details of a Register API transaction in a ChargeRequest
         // object.
@@ -232,7 +232,7 @@ public class Square extends CordovaPlugin {
 
             // This opens Square Register's Google Play Store listing if Square Register
             // doesn't appear to be installed on the device.
-            registerClient.openRegisterPlayStoreListing();
+            registerClient.openPointOfSalePlayStoreListing();
         }
 
         return null;
