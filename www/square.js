@@ -50,9 +50,7 @@ squareExport.setOptions =
     };
 
 squareExport.requestCharge =
-    function(amount, options, successCallback, failureCallback) {
-        if(typeof options === 'undefined' || options == null) options = {};
-        options = Object.assign(options, {'amount': amount});
+    function(options, successCallback, failureCallback) {
         return exec(
             successCallback,
             failureCallback,
