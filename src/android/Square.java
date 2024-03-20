@@ -189,49 +189,44 @@ public class Square extends CordovaPlugin {
             return new PluginResult(PluginResult.Status.ERROR, "amount in cents is required for charging with Square");
         }
 
+        String applicationId;
+        if(options.has(OPT_APPLICATION_ID)) {
+            applicationId = options.optString(OPT_APPLICATION_ID);
+        } else {
+            return new PluginResult(PluginResult.Status.ERROR, "applicationId is required for charging with Square");
+        }
+        String currency;
+        if(options.has(OPT_CURRENCY)) {
+            currency = options.optString(OPT_CURRENCY);
+        } else {
+            return new PluginResult(PluginResult.Status.ERROR, "currency is required for charging with Square");
+        }
+        String tender;
+        if(options.has(OPT_TENDERS)) {
+            tender = options.optString(OPT_TENDERS);
+        } else {
+            return new PluginResult(PluginResult.Status.ERROR, "tender is required for charging with Square");
+        }
+
+        Log.w(LOGTAG, "executeRequestCharge::" + OPT_AMOUNT + "=" +amount);
+        Log.w(LOGTAG, "executeRequestCharge::" + OPT_APPLICATION_ID + "=" + applicationId);
+        Log.w(LOGTAG, "executeRequestCharge::" + OPT_CURRENCY + "=" +currency);
+        Log.w(LOGTAG, "executeRequestCharge::" + OPT_TENDERS + "=" + tender);
+        CurrencyCode currencyCode = CurrencyCode.valueOf(currency);
+        ChargeRequest.TenderType tenderType = ChargeRequest.TenderType.valueOf(tender);
+
         this.requestCallback = callbackContext;
 
-        this.setOptions(options);
-
-        // Replace "applicationId" with your Square-assigned application ID,
-        // available from the application dashboard.
         registerClient = PosSdk.createClient(cordova.getActivity(), applicationId);
 
-        // You specify all of the details of a Register API transaction in a ChargeRequest
-        // object.
-        ChargeRequest.Builder request = new ChargeRequest.Builder(amount, CurrencyCode.valueOf(currency))
+        ChargeRequest.Builder request = new ChargeRequest.Builder(amount, currencyCode)
+                .restrictTendersTo(tenderType)
                 .autoReturn(timeout, TimeUnit.MILLISECONDS);
 
-        if (this.note != null) {
-            request = request.note(note);
-        }
-
-        if (this.metadata != null) {
-            request = request.requestMetadata(metadata);
-        }
-
-        if (this.tenders != null) {
-            Set<ChargeRequest.TenderType> tenderTypes = new LinkedHashSet<ChargeRequest.TenderType>();
-            for(int i = 0; i < tenders.length(); i++) {
-                tenderTypes.add(ChargeRequest.TenderType.valueOf(tenders.optString(i).toUpperCase()));
-            }
-            request = request.restrictTendersTo(tenderTypes);
-        }
-
-        if (this.locationId != null) {
-           request = request.enforceBusinessLocation(locationId);
-        }
-
         try {
-            // This method generates an intent that includes the details of the transaction to process.
             Intent chargeIntent = registerClient.createChargeIntent(request.build());
-
-            // This fires off the request to begin the app switch.
             cordova.startActivityForResult(this, chargeIntent, requestCode);
         } catch (ActivityNotFoundException e) {
-
-            // This opens Square Register's Google Play Store listing if Square Register
-            // doesn't appear to be installed on the device.
             registerClient.openPointOfSalePlayStoreListing();
         }
 
