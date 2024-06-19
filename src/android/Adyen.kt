@@ -1,20 +1,36 @@
 package com.dynamify.plugin.adyen;
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import com.adyen.checkout.core.AdyenLogLevel
 import com.adyen.checkout.core.AdyenLogger
+import com.adyen.checkout.core.Environment
+import com.adyen.checkout.dropin.DropIn
+import com.adyen.checkout.dropin.SessionDropInCallback
+import com.adyen.checkout.dropin.SessionDropInResult
+import com.adyen.checkout.sessions.core.CheckoutSessionProvider
+import com.adyen.checkout.sessions.core.CheckoutSessionResult
 import com.adyen.checkout.sessions.core.SessionModel
+import com.adyen.checkout.sessions.core.SessionPaymentResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apache.cordova.CallbackContext
+import org.apache.cordova.CordovaInterface
 import org.apache.cordova.CordovaPlugin
+import org.apache.cordova.CordovaWebView
 import org.apache.cordova.LOG
 import org.json.JSONArray
 import org.json.JSONObject
 
 class Adyen : CordovaPlugin() {
 
+    private var cordovaCallbackContext: CallbackContext? = null
+
     companion object {
         private const val LOG_TAG = "AdyenPlugin"
+        private const val REQUEST_CODE_NEW_ACTIVITY = 1
     }
 
     override fun execute(
@@ -22,6 +38,7 @@ class Adyen : CordovaPlugin() {
         args: JSONArray?,
         callbackContext: CallbackContext?
     ): Boolean {
+        cordovaCallbackContext = callbackContext
         LOG.d(LOG_TAG, "Executing action: $action")
         if (action == "requestCharge") {
             if (args != null && args.length() > 0) {
@@ -48,14 +65,48 @@ class Adyen : CordovaPlugin() {
 
     private fun openNewActivity(context: Context, paymentRequest: PaymentRequest) {
         AdyenLogger.setLogLevel(
-              AdyenLogLevel.DEBUG
+            AdyenLogLevel.DEBUG
         )
         val intent = Intent(context, NewActivity::class.java)
         val sessionModel: SessionModel = SessionModel.SERIALIZER.deserialize(paymentRequestToJson(paymentRequest))
         intent.putExtra("sessionModel", sessionModel)
         intent.putExtra("clientKey", paymentRequest.clientKey)
-        cordova.activity.startActivity(intent)
-        cordova.activity.runOnUiThread {  }
+        cordova.setActivityResultCallback(this)
+        cordova.activity.startActivityForResult(intent, REQUEST_CODE_NEW_ACTIVITY)
+    }
+
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
+        if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
+            when (resultCode) {
+                Activity.RESULT_OK -> {
+                    val paymentResult = intent?.getStringExtra("paymentResult")
+                    val error = intent?.getStringExtra("error")
+                    val resultJson = JSONObject()
+                    if (paymentResult != null) {
+                        LOG.d("PAYMENT_RESULT", paymentResult)
+                        // Handle successful payment result
+                        resultJson.put("status", "success")
+                        resultJson.put("paymentResult", paymentResult)
+                    } else if (error != null) {
+                        LOG.e("PAYMENT_ERROR", error)
+                        resultJson.put("status", "error")
+                        resultJson.put("paymentResult", error)
+                        // Handle payment error
+                    }
+                    cordovaCallbackContext?.success(resultJson)
+                }
+                Activity.RESULT_CANCELED -> {
+                    LOG.d("PAYMENT_CANCELED", "Payment was cancelled by the user.")
+                    // Handle user cancellation
+                    val resultJson = JSONObject()
+                    resultJson.put("status", "cancelled")
+                    cordovaCallbackContext?.success(resultJson)
+                }
+            }
+        }
     }
 
     private fun parsePaymentRequest(options: JSONObject): PaymentRequest {
