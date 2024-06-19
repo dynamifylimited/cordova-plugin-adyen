@@ -1,9 +1,9 @@
 {
-  "name": "cordova-plugin-judopay-googlepay",
+  "name": "cordova-plugin-android-adyen",
   "version": "0.0.1",
-  "description": "Cordova plugin for integrating Judopay Google Pay in modern cordova apps",
+  "description": "Cordova plugin for integrating Adyen PSP in modern cordova apps",
   "cordova": {
-    "id": "cordova-plugin-judopay-googlepay",
+    "id": "cordova-plugin-android-adyen",
     "platforms": [
       "android"
     ]
