@@ -13,52 +13,127 @@ import org.json.JSONObject
 
 class Adyen : CordovaPlugin() {
 
+    companion object {
+        private const val LOG_TAG = "AdyenPlugin"
+    }
+
     override fun execute(
         action: String?,
         args: JSONArray?,
         callbackContext: CallbackContext?
     ): Boolean {
-        LOG.d("here", "action", action)
-        LOG.d("here", "args", args)
+        LOG.d(LOG_TAG, "Executing action: $action")
         if (action == "requestCharge") {
-           LOG.d("here", "in request charge")
-
-            val context: Context = cordova.activity.applicationContext
-            openNewActivity(context)
-           
+            if (args != null && args.length() > 0) {
+                try {
+                    val options = args.getJSONObject(0) // Assuming options is the first element in args
+                    val paymentRequest = parsePaymentRequest(options)
+                    LOG.d(LOG_TAG, "Parsed payment request: $paymentRequest")
+                    val context: Context = cordova.activity.applicationContext
+                    openNewActivity(context, paymentRequest)
+                    return true
+                } catch (e: Exception) {
+                    LOG.e(LOG_TAG, "Error parsing payment request", e)
+                    callbackContext?.error("Error parsing payment request: ${e.message}")
+                    return false
+                }
+            } else {
+                LOG.e(LOG_TAG, "No options provided")
+                callbackContext?.error("No options provided")
+                return false
+            }
         }
         return false
     }
 
-      private fun openNewActivity(context: Context) {
-          AdyenLogger.setLogLevel(
+    private fun openNewActivity(context: Context, paymentRequest: PaymentRequest) {
+        AdyenLogger.setLogLevel(
               AdyenLogLevel.DEBUG
-          )
+        )
         val intent = Intent(context, NewActivity::class.java)
-          val sessionModel: SessionModel = SessionModel.SERIALIZER.deserialize(getSessionJson())
-          val clientKey:String = "test_5UZIW4YRQRB67IPVCWRT4VIHBMXGQ2NS"
-          intent.putExtra("sessionModel", sessionModel)
-          intent.putExtra("clientKey", clientKey)
-
+        val sessionModel: SessionModel = SessionModel.SERIALIZER.deserialize(paymentRequestToJson(paymentRequest))
+        intent.putExtra("sessionModel", sessionModel)
+        intent.putExtra("clientKey", paymentRequest.clientKey)
         cordova.activity.startActivity(intent)
-
-
+        cordova.activity.runOnUiThread {  }
     }
 
-    private fun getSessionJson():JSONObject {
-        val sessionData:String = "Ab02b4c0!BQABAgABVjGTsY1+LhuySOC08AywTH6PF5jddJWui0yjiKZQ+oINB9DVwQl2Z+FCZ1m/7gK3DsvY1XnipEDwtMm0jA6SDQ228zr/UPD1XV48w6vHs+T3iQxpyVQAY/RtxnHNBafSKDFZhdY9E5quxAiL6gE/odUizLo+f0G3ptCKNlwv0IDuQhWefGCm6n6jRrCgLQDTvXFFXPPOjLKbu4tL2zE6YhqB+iEGEif7S85aFiy3YjSW7Iz9c4gvCsuHDWy4oYG+LDDU0/gZMLMFaEOL9MeSS2DOWDQcEuGob6soE2YYuGQv9XBnCYkDKLaxPVSUivtY5H+sGa7FCASYN9e5oOWKTqmcAO9GAbUjdzVvKEorUVfsUc+RcpnUGdgrZnaEXM7q6/DxzYOkn0JilqpOWaDhb6OslPFWIrWAgN0FAIR0DazhJbaPjRR2PxtK364CbrkuT3ZV7NxjLNwaT+kR6wz1Fpcm2+vxepb/2gOm1p1guMWaQvXgXQHxuBOecFtE4qR658AN+NsY9t9my9G/CXZiHgvNBcHxsr5rqvIBA/zAvx1lGxnT/53IAypjQvHs+rxje77AbjP9l+6GCgYIqmkFJvQaY4vcaU+MYYluA766xhf5rbIc2EOvPznEm/+h1UMHjHPD8V4QD04AOZo/eEmgL8EvdNXQrnZi4WbFkKqCcQzuS6faB5ysxaDUNyEASnsia2V5IjoiQUYwQUFBMTAzQ0E1MzdFQUVEODdDMjRERDUzOTA5QjgwQTc4QTkyM0UzODIzRDY4REFDQzk0QjlGRjgzMDVEQyJ9kybKvMVRg72Vcxzs/XGLtMqCyV5ndAEJF1xLGDmrvd+b7hOK1UpY2Va6Nwrh0vPE/1P6b+MJA2pFMqSPXFMlrm+Hyfb07UjjNZ8+fx0fJB4dA3oRMGAHa6gvEKUzAWw4UUZW3IdIea8U7jjW8TJzxuPIqrTfoZUHcDP7SkPIzH8LhdUCjpB1bAFTVrvDiHjOf8kBR4aRcD6ejpQe4XNYkJGLHyZG2EEd5UA+v9FcfFABf3TvX484Hu4xp2uLqY7ynV42YFJ8Rech5VEnem8hVTZ2ckiZ4mLnidztU+S5BaERFvyLGsCmWIXLEUUcJ7Qmp6b8qSkGiHLnefp0WZWkAfXjt4aodsp26oxZZ1P5JHWfC9wDfdVJRaxLhgMr9ut7NTnwiq7jUBOua4aNESEmqdQSRxR6K6lhu2wf8Od9tf+ZBAA+KwyIuVoIM6RlPzY56iFf1bsMkNVEMIEDoQH8QqztEAY63e2YINDxeuxPqWrHXme28OugXdYnmfLw+VYs1bZ+pVrmf3mNquS9dSNUxBJuRXwwVKmmOFwjDojW+yxLH1xsuHcgY0ky5IXCbCyOY+pvPt72YTYvexKBlcq2iU3CgdVRjX3P+juL26HWHSTAJG0axiQna1D8ZSYyrJGywMA2sPYz8VhWxA=="
-        return JSONObject().put(
-            "amount", JSONObject()
-                .put("currency", "AUD")
-                .put("value", 100))
-            .put("countryCode", "AU")
-            .put("expiresAt", "2024-06-18T18:59:05+02:00")
-            .put("id", "CS375C07F6971E58F3")
-            .put("merchantAccount", "DynamifyLimited696ECOM")
-            .put("reference", "test-payment")
-            .put("returnUrl", "https://your-company.com/checkout?shopperOrder=12xy..")
-            .put("shopperLocale", "en-US")
-            .put("mode", "embedded")
-            .put("sessionData",sessionData)
+    private fun parsePaymentRequest(options: JSONObject): PaymentRequest {
+        val amountJson = options.getJSONObject(PaymentRequest.FIELD_AMOUNT)
+        val amount = Amount(
+            currency = amountJson.optString(PaymentRequest.FIELD_CURRENCY, PaymentRequest.DEFAULT_CURRENCY),
+            value = amountJson.optInt(PaymentRequest.FIELD_VALUE, 0)
+        )
+
+        return PaymentRequest(
+            amount = amount,
+            countryCode = options.optString(PaymentRequest.FIELD_COUNTRY_CODE, PaymentRequest.DEFAULT_COUNTRY_CODE),
+            expiresAt = options.getString(PaymentRequest.FIELD_EXPIRES_AT),
+            id = options.getString(PaymentRequest.FIELD_ID),
+            merchantAccount = options.getString(PaymentRequest.FIELD_MERCHANT_ACCOUNT),
+            reference = options.getString(PaymentRequest.FIELD_REFERENCE),
+            returnUrl = options.getString(PaymentRequest.FIELD_RETURN_URL),
+            shopperLocale = options.optString(PaymentRequest.FIELD_SHOPPER_LOCALE, PaymentRequest.DEFAULT_LOCALE),
+            mode = options.optString(PaymentRequest.FIELD_MODE, PaymentRequest.DEFAULT_MODE),
+            sessionData = options.getString(PaymentRequest.FIELD_SESSION_DATA),
+            clientKey = options.getString(PaymentRequest.FIELD_CLIENT_KEY)
+        )
+    }
+
+    private fun paymentRequestToJson(paymentRequest: PaymentRequest): JSONObject {
+        return JSONObject().apply {
+            put(PaymentRequest.FIELD_AMOUNT, JSONObject().apply {
+                put(PaymentRequest.FIELD_CURRENCY, paymentRequest.amount.currency)
+                put(PaymentRequest.FIELD_CURRENCY, paymentRequest.amount.value)
+            })
+            put(PaymentRequest.FIELD_COUNTRY_CODE, paymentRequest.countryCode)
+            put(PaymentRequest.FIELD_EXPIRES_AT, paymentRequest.expiresAt)
+            put(PaymentRequest.FIELD_ID, paymentRequest.id)
+            put(PaymentRequest.FIELD_MERCHANT_ACCOUNT, paymentRequest.merchantAccount)
+            put(PaymentRequest.FIELD_REFERENCE, paymentRequest.reference)
+            put(PaymentRequest.FIELD_RETURN_URL, paymentRequest.returnUrl)
+            put(PaymentRequest.FIELD_SHOPPER_LOCALE, paymentRequest.shopperLocale)
+            put(PaymentRequest.FIELD_MODE, paymentRequest.mode)
+            put(PaymentRequest.FIELD_SESSION_DATA, paymentRequest.sessionData)
+        }
+    }
+}
+
+data class Amount(
+    val currency: String,
+    val value: Int
+)
+
+data class PaymentRequest(
+    val amount: Amount,
+    val countryCode: String,
+    val expiresAt: String,
+    val id: String,
+    val merchantAccount: String,
+    val reference: String,
+    val returnUrl: String,
+    val shopperLocale: String,
+    val mode: String,
+    val sessionData: String,
+    val clientKey: String
+) {
+    companion object {
+        const val FIELD_AMOUNT = "amount"
+        const val FIELD_CURRENCY = "currency"
+        const val FIELD_VALUE = "value"
+        const val FIELD_COUNTRY_CODE = "countryCode"
+        const val FIELD_EXPIRES_AT = "expiresAt"
+        const val FIELD_ID = "id"
+        const val FIELD_MERCHANT_ACCOUNT = "merchantAccount"
+        const val FIELD_REFERENCE = "reference"
+        const val FIELD_RETURN_URL = "returnUrl"
+        const val FIELD_SHOPPER_LOCALE = "shopperLocale"
+        const val FIELD_MODE = "mode"
+        const val FIELD_SESSION_DATA = "sessionData"
+        const val DEFAULT_CURRENCY = "EUR"
+        const val DEFAULT_COUNTRY_CODE = "NL"
+        const val DEFAULT_LOCALE = "en-US"
+        const val DEFAULT_MODE = "embedded"
+        const val FIELD_CLIENT_KEY = "clientKey"
     }
 }
