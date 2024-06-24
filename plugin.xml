@@ -26,4 +26,23 @@
         <source-file src="src/android/activity_new.xml" target-dir="res/layout"/>
 		<framework src="src/android/build.gradle" custom="true" type="gradleReference" />
 	</platform>
+
+	<!-- iOS platform configuration -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Adyen">
+                <param name="ios-package" value="Adyen" />
+            </feature>
+        </config-file>
+        <source-file src="src/ios/Adyen.swift" />
+		<source-file src="src/ios/Configuration.swift" />
+		<source-file src="src/ios/DropInExample.swift" />
+		<source-file src="src/ios/InitialDataFlowProtocol.swift" />
+		<source-file src="src/ios/PresenterExampleProtocol.swift" />
+		 <podspec>
+            <pods use-frameworks="true">
+                <pod name="Adyen" />
+            </pods>
+        </podspec>
+    </platform>
 </plugin>

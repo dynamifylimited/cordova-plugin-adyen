@@ -35,4 +35,10 @@ adyenExport.requestCharge =
     };
 
 
+adyenExport.echo = 
+    function(arg0, success, error) {
+       return exec(success, error, "Adyen", "echo", [arg0]);
+      
+    };
+
 module.exports = adyenExport;
