@@ -35,9 +35,6 @@
             </feature>
         </config-file>
         <source-file src="src/ios/Adyen.swift" />
-		<source-file src="src/ios/Configuration.swift" />
-		<source-file src="src/ios/DropInExample.swift" />
-		<source-file src="src/ios/InitialDataFlowProtocol.swift" />
 		<source-file src="src/ios/InitialDataFlowProtocolV1.swift" />
 		<source-file src="src/ios/PresenterExampleProtocol.swift" />
 		 <podspec>
