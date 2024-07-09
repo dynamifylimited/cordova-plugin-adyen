@@ -212,7 +212,7 @@ import Adyen
                 topViewController.present(alertController, animated: true, completion: nil)
             }
             
-            self.sendSuccessResult(resultCode: resultCode, callbackId: self.callbackId)
+            self.handlePluginResult(resultCode: resultCode, callbackId: self.callbackId)
         }
     }
     
@@ -234,6 +234,7 @@ import Adyen
             if let presentedViewController = topViewController.presentedViewController {
                 presentedViewController.dismiss(animated: true) { [weak self] in
                     print("dismissing top view controller")
+                    self?.handlePluginResult(resultCode: "Cancelled" , callbackId: self!.callbackId)
                 }
             } else {
                 //                    topViewController.present(alertController, animated: true, completion: nil)
@@ -241,6 +242,15 @@ import Adyen
             
         }
         
+    }
+    
+    func handlePluginResult(resultCode: String, callbackId: String) {
+        switch resultCode {
+        case "Authorised", "Received", "Pending", "PresentToShopper":
+            self.sendSuccessResult(resultCode: resultCode, callbackId: callbackId)
+        default:
+            self.sendErrorResult(resultCode: resultCode, callbackId: callbackId)
+        }
     }
     
     func sendErrorResult(resultCode: String, callbackId: String) {
