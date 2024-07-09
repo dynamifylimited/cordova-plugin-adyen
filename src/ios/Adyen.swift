@@ -110,7 +110,7 @@ import Adyen
         let paymentMethods = session.sessionContext.paymentMethods
         let component = DropInComponent(paymentMethods: paymentMethods,
                                         context: self.context!,
-                                        title: ConfigurationConstants.appName)
+                                        title:"app")
         print("here 14")
         component.delegate = session
         print("here 15")
