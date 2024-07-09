@@ -23,8 +23,8 @@ import Adyen
     //      }
     
     
-    @objc(echo:)
-    func echo(command: CDVInvokedUrlCommand) {
+    @objc(requestCharge:)
+    func requestCharge(command: CDVInvokedUrlCommand) {
         //        dropInExample?.start()
         guard let paymentRequest = command.argument(at: 0) as? [String: Any],
               let amountDict = paymentRequest["amount"] as? [String: Any],
