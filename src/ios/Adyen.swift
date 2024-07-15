@@ -1,4 +1,5 @@
 import Adyen
+import PassKit
 @objc(Adyen) class Adyen: CDVPlugin, InitialDataFlowProtocolV1 {
     
     
@@ -47,12 +48,20 @@ import Adyen
             return
         }
         
-        
+        AdyenLogging.isEnabled = true
         self.callbackId = command.callbackId
         self.context = generateContext(clientKey: clientKey, currencyCode: currency, countryCode: countryCode, value: value)
         self.sessionId = id
         self.SessionData = sessionData
         self.clientKey = clientKey
+        
+        print("Session id ")
+        print(self.sessionId)
+        print("______")
+        print("session data")
+        print(self.SessionData)
+        print("client key")
+        print(self.clientKey)
         
         
         loadSession { [weak self] response in
@@ -105,11 +114,34 @@ import Adyen
         
     }
     
+    private func initializeApplePay() -> DropInComponent.Configuration {
+        print("initializeing apple pay")
+        do {
+            let countryCode = "GB"
+            let currencyCode = "GBP"
+            let merchantIdentifier = "merchant.com.dynamifyadyen"
+            let summaryItems = [
+                PKPaymentSummaryItem(label: "Item 1", amount: NSDecimalNumber(string: "10.00")),
+                PKPaymentSummaryItem(label: "Item 2", amount: NSDecimalNumber(string: "15.00"))
+            ]
+            
+            let dropInConfiguration = DropInComponent.Configuration()
+            let applePayPayment = try ApplePayPayment(countryCode: countryCode, currencyCode: currencyCode, summaryItems: summaryItems)
+            dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: merchantIdentifier)
+            return dropInConfiguration
+        } catch {
+            print("Error initializing apple pay")
+            return DropInComponent.Configuration()
+        }
+    }
+    
     private func dropInComponent(from session: AdyenSession) -> DropInComponent {
         print("here 13")
         let paymentMethods = session.sessionContext.paymentMethods
+        let dropInConfiguration = initializeApplePay()
         let component = DropInComponent(paymentMethods: paymentMethods,
                                         context: self.context!,
+                                        configuration: dropInConfiguration,
                                         title:"app")
         print("here 14")
         component.delegate = session
@@ -155,7 +187,6 @@ import Adyen
             guard let self else { return }
             
             print ("here 8")
-            
             switch response {
             case let .success(config):
                 AdyenSession.initialize(with: config,
