@@ -9,6 +9,8 @@ import PassKit
     private var context: AdyenContext?
     private var dropInComponent: DropInComponent?
     private var callbackId: String = ""
+    private var dropInConfiguration: DropInComponent.Configuration? = nil
+    private var merchantIdentifier = "merchant.com.dynamifyadyen"
         
     @objc(requestCharge:)
     func requestCharge(command: CDVInvokedUrlCommand) {
@@ -36,6 +38,8 @@ import PassKit
         self.sessionId = id
         self.SessionData = sessionData
         self.clientKey = clientKey
+        
+        self.dropInConfiguration = initializeApplePay(currencyCode: currency, countryCode: countryCode, value: value)
         
         loadSession { [weak self] response in
             guard let self else { return }
@@ -73,20 +77,14 @@ import PassKit
         dropInComponent = dropIn
     }
     
-    private func initializeApplePay() -> DropInComponent.Configuration {
+    private func initializeApplePay(currencyCode: String, countryCode: String, value: Int) -> DropInComponent.Configuration {
         print("initializeing apple pay")
         do {
-            let countryCode = "GB"
-            let currencyCode = "GBP"
-            let merchantIdentifier = "merchant.com.dynamifyadyen"
-            let summaryItems = [
-                PKPaymentSummaryItem(label: "Item 1", amount: NSDecimalNumber(string: "10.00")),
-                PKPaymentSummaryItem(label: "Item 2", amount: NSDecimalNumber(string: "15.00"))
-            ]
-            
             let dropInConfiguration = DropInComponent.Configuration()
-            let applePayPayment = try ApplePayPayment(countryCode: countryCode, currencyCode: currencyCode, summaryItems: summaryItems)
-            dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: merchantIdentifier)
+            let amount = Amount(value: value, currencyCode: currencyCode)
+            let payment = Payment(amount: amount, countryCode: countryCode)
+            let applePayPayment = try ApplePayPayment(payment: payment, brand: "app")
+            dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: self.merchantIdentifier)
             return dropInConfiguration
         } catch {
             return DropInComponent.Configuration()
@@ -95,7 +93,7 @@ import PassKit
     
     private func dropInComponent(from session: AdyenSession) -> DropInComponent {
         let paymentMethods = session.sessionContext.paymentMethods
-        let dropInConfiguration = initializeApplePay()
+        let dropInConfiguration = self.dropInConfiguration!
         let component = DropInComponent(paymentMethods: paymentMethods,
                                         context: self.context!,
                                         configuration: dropInConfiguration,
