@@ -1,9 +1,9 @@
 {
-  "name": "cordova-plugin-android-adyen",
+  "name": "cordova-plugin-adyen",
   "version": "0.0.1",
   "description": "Cordova plugin for integrating Adyen PSP in modern cordova apps",
   "cordova": {
-    "id": "cordova-plugin-android-adyen",
+    "id": "cordova-plugin-adyen",
     "platforms": [
       "android"
     ]
@@ -16,9 +16,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/dynamifylimited/cordova-plugin-judopay-googlepay.git"
+    "url": "https://github.com/abhinax4991/cordova-plugin-adyen.git"
   },
   "author": "Abhinav Priyadarshi",
   "license": "ISC",
-  "homepage": "https://github.com/dynamifylimited/cordova-plugin-judopay-googlepay#readme"
+  "homepage": "https://github.com/abhinax4991/cordova-plugin-adyen#readme"
 }
