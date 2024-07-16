@@ -59,6 +59,7 @@ class Adyen : CordovaPlugin() {
         val sessionModel: SessionModel = SessionModel.SERIALIZER.deserialize(paymentRequestToJson(paymentRequest))
         intent.putExtra("sessionModel", sessionModel)
         intent.putExtra("clientKey", paymentRequest.clientKey)
+        intent.putExtra("countryCode", paymentRequest.countryCode)
         cordova.setActivityResultCallback(this)
         cordova.activity.startActivityForResult(intent, REQUEST_CODE_NEW_ACTIVITY)
     }
