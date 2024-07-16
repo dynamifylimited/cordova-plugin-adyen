@@ -25,11 +25,6 @@ class NewActivity: AppCompatActivity() {
 
     companion object {
         private const val LOG_TAG = "NewActivity"
-        private var instance: NewActivity? = null
-
-        fun getInstance(): NewActivity? {
-            return instance
-        }
     }
 
     private lateinit var dropInLauncher: ActivityResultLauncher<SessionDropInResultContractParams>
@@ -40,15 +35,16 @@ class NewActivity: AppCompatActivity() {
         LOG.d(LOG_TAG, "on create")
         super.onCreate(savedInstanceState)
         dropInLauncher = DropIn.registerForDropInResult(this,  AdyenSessionDropInCallback(this))
-        sessionModel = intent.getParcelableExtra<SessionModel>("sessionModel")!!
-        clientKey = intent.getStringExtra("clientKey").toString()
-        instance = this
-        sessionModel?.let { model ->
-            clientKey?.let { key ->
-                // Call createPaymentSession with non-null data
-                createPaymentSession(model, key)
-            }
+        sessionModel = intent.getParcelableExtra("sessionModel") ?: run {
+            handleCheckoutSessionError(CheckoutException("SessionModel is missing"))
+            return
         }
+        clientKey = intent.getStringExtra("clientKey") ?: run {
+            handleCheckoutSessionError(CheckoutException("ClientKey is missing"))
+            return
+        }
+
+        createPaymentSession(sessionModel, clientKey)
     }
 
     private fun createPaymentSession(sessionModel: SessionModel, clientKey: String) {
@@ -59,14 +55,14 @@ class NewActivity: AppCompatActivity() {
             when (result) {
                 is CheckoutSessionResult.Success -> handleCheckoutSessionSuccess(result.checkoutSession)
                 is CheckoutSessionResult.Error -> handleCheckoutSessionError(result.exception)
-                else -> {}
+                else -> handleCheckoutSessionError(CheckoutException("Unexpected resul from CheckoutSessionProvider"))
             }
         }
     }
 
     private fun handleCheckoutSessionError(exception: CheckoutException) {
         LOG.d(LOG_TAG, "Error while creating checkout sessions")
-        setResultAndFinish("Error", Activity.RESULT_CANCELED)
+        setResultAndFinish(PaymentStatus.ERROR, Activity.RESULT_CANCELED)
     }
 
     private fun handleCheckoutSessionSuccess(checkoutSession: CheckoutSession) {
@@ -74,7 +70,7 @@ class NewActivity: AppCompatActivity() {
             DropIn.startPayment(this, dropInLauncher, checkoutSession)
         } catch (e: Exception) {
             LOG.e(LOG_TAG, "Error starting DropIn payment: ${e.message}", e)
-            setResultAndFinish("Error", Activity.RESULT_CANCELED)
+            setResultAndFinish(PaymentStatus.ERROR, Activity.RESULT_CANCELED)
         }
     }
 
@@ -89,9 +85,10 @@ class NewActivity: AppCompatActivity() {
     }
 
     private fun showAlert(resultCode: String, data: Intent, activityResultCodes: Int) {
+        val message = if (resultCode == "Authorised") "Success" else resultCode
         AlertDialog.Builder(this)
             .setTitle("Payment Status")
-            .setMessage(resultCode)
+            .setMessage(message)
             .setPositiveButton("OK") { _, _ ->
                 LOG.d(LOG_TAG, "Setting result with data and finishing activity")
                 this.setResult(activityResultCodes, data)
@@ -112,24 +109,24 @@ class AdyenSessionDropInCallback(private val activity: Activity): SessionDropInC
 
     private fun handleDropInFinished(result: SessionPaymentResult) {
         when (result.resultCode) {
-            "Authorised", "Pending", "Received", -> {
+            PaymentStatus.AUTHORISED, PaymentStatus.PENDING, PaymentStatus.RECEIVED -> {
                 setResultAndFinish(result.resultCode.toString(), Activity.RESULT_OK)
             } else -> {
             setResultAndFinish(result.resultCode.toString(), Activity.RESULT_CANCELED)
-        }
+            }
         }
     }
 
     private fun handleDropInError(reason: String?) {
-        setResultAndFinish("Error", Activity.RESULT_CANCELED)
+        setResultAndFinish(PaymentStatus.ERROR, Activity.RESULT_CANCELED)
     }
 
     private fun handleDropInCancelledByUser() {
-        setResultAndFinish("Cancelled", Activity.RESULT_OK)
+        setResultAndFinish(PaymentStatus.CANCELLED, Activity.RESULT_OK)
     }
 
     private fun handleUnexpectedState() {
-        setResultAndFinish("Error", Activity.RESULT_CANCELED)
+        setResultAndFinish(PaymentStatus.ERROR, Activity.RESULT_CANCELED)
     }
 
     private fun setResultAndFinish(resultCode: String, activityResultCodes: Int) {
@@ -138,13 +135,11 @@ class AdyenSessionDropInCallback(private val activity: Activity): SessionDropInC
         }
         LOG.d(LOG_TAG, "Setting result with data and finishing activity")
         showAlert(resultCode, data, activityResultCodes)
-//        activity.setResult(activityResultCodes, data)
-//        activity.finish()
     }
 
     private fun showAlert(resultCode: String, data: Intent, activityResultCodes: Int) {
         when (resultCode) {
-            "Cancelled" -> {
+            PaymentStatus.CANCELLED -> {
                 activity.setResult(activityResultCodes, data)
                 activity.finish()
             } else -> {
@@ -178,4 +173,12 @@ class AdyenSessionDropInCallback(private val activity: Activity): SessionDropInC
         }
     }
 
+}
+
+object PaymentStatus {
+    const val AUTHORISED = "Authorised"
+    const val PENDING = "Pending"
+    const val RECEIVED = "Received"
+    const val CANCELLED = "Cancelled"
+    const val ERROR = "Error"
 }
