@@ -24,7 +24,7 @@ import org.apache.cordova.LOG
 class AdyenActivity: AppCompatActivity() {
 
     companion object {
-        private const val LOG_TAG = "NewActivity"
+        private const val LOG_TAG = "AdyenActivity"
     }
 
     private lateinit var dropInLauncher: ActivityResultLauncher<SessionDropInResultContractParams>
