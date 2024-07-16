@@ -80,30 +80,15 @@ class Adyen : CordovaPlugin() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
         if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
+            val adyenResultCode = intent?.getStringExtra("resultCode")
+            val resultJson = JSONObject()
+            resultJson.put("resultCode", adyenResultCode)
             when (resultCode) {
                 Activity.RESULT_OK -> {
-                    val paymentResult = intent?.getStringExtra("paymentResult")
-                    val error = intent?.getStringExtra("error")
-                    val resultJson = JSONObject()
-                    if (paymentResult != null) {
-                        LOG.d("PAYMENT_RESULT", paymentResult)
-                        // Handle successful payment result
-                        resultJson.put("status", "success")
-                        resultJson.put("paymentResult", paymentResult)
-                    } else if (error != null) {
-                        LOG.e("PAYMENT_ERROR", error)
-                        resultJson.put("status", "error")
-                        resultJson.put("paymentResult", error)
-                        // Handle payment error
-                    }
                     cordovaCallbackContext?.success(resultJson)
                 }
                 Activity.RESULT_CANCELED -> {
-                    LOG.d("PAYMENT_CANCELED", "Payment was cancelled by the user.")
-                    // Handle user cancellation
-                    val resultJson = JSONObject()
-                    resultJson.put("status", "cancelled")
-                    cordovaCallbackContext?.success(resultJson)
+                    cordovaCallbackContext?.error(resultJson)
                 }
             }
         }
