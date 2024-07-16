@@ -22,7 +22,6 @@
         </config-file>
 		<source-file src="src/android/Adyen.kt" target-dir="src/main/kotlin/Adyen" />
 		<source-file src="src/android/NewActivity.kt" target-dir="src/main/kotlin/Adyen" />
-		<source-file src="src/android/ExampleDropInService.kt" target-dir="src/main/kotlin/Adyen" />
         <source-file src="src/android/activity_new.xml" target-dir="res/layout"/>
 		<framework src="src/android/build.gradle" custom="true" type="gradleReference" />
 	</platform>
