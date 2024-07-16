@@ -35,7 +35,7 @@ class Adyen : CordovaPlugin() {
                     val paymentRequest = parsePaymentRequest(options)
                     LOG.d(LOG_TAG, "Parsed payment request: $paymentRequest")
                     val context: Context = cordova.activity.applicationContext
-                    openNewActivity(context, paymentRequest)
+                    openAdyenActivity(context, paymentRequest)
                     return true
                 } catch (e: Exception) {
                     LOG.e(LOG_TAG, "Error parsing payment request", e)
@@ -51,11 +51,11 @@ class Adyen : CordovaPlugin() {
         return false
     }
 
-    private fun openNewActivity(context: Context, paymentRequest: PaymentRequest) {
+    private fun openAdyenActivity(context: Context, paymentRequest: PaymentRequest) {
         AdyenLogger.setLogLevel(
             AdyenLogLevel.DEBUG
         )
-        val intent = Intent(context, NewActivity::class.java)
+        val intent = Intent(context, AdyenActivity::class.java)
         val sessionModel: SessionModel = SessionModel.SERIALIZER.deserialize(paymentRequestToJson(paymentRequest))
         intent.putExtra("sessionModel", sessionModel)
         intent.putExtra("clientKey", paymentRequest.clientKey)
