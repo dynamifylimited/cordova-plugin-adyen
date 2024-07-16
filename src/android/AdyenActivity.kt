@@ -92,8 +92,6 @@ class AdyenActivity: AppCompatActivity() {
         }
         LOG.d(LOG_TAG, "Setting result with data and finishing activity")
         showAlert(resultCode, data, activityResultCodes)
-//        this.setResult(activityResultCodes, data)
-//        this.finish()
     }
 
     private fun showAlert(resultCode: String, data: Intent, activityResultCodes: Int) {
