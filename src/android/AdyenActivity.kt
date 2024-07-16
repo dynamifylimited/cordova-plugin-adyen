@@ -44,19 +44,31 @@ class AdyenActivity: AppCompatActivity() {
             return
         }
 
-        createPaymentSession(sessionModel, clientKey)
+       val countryCode = intent.getStringExtra("countryCode") ?: run {
+            handleCheckoutSessionError(CheckoutException("countryCode is missing"))
+            return
+        }
+
+        createPaymentSession(sessionModel, clientKey, countryCode)
     }
 
-    private fun createPaymentSession(sessionModel: SessionModel, clientKey: String) {
+    private fun createPaymentSession(sessionModel: SessionModel, clientKey: String, countryCode: String) {
         LOG.d(LOG_TAG, "creating payment sessions for client key: $clientKey")
         lifecycleScope.launch {
             LOG.d(LOG_TAG, "calling CheckoutSessionProvider.createSession")
-            val result = CheckoutSessionProvider.createSession(sessionModel, Environment.TEST, clientKey)
+            val result = CheckoutSessionProvider.createSession(sessionModel, getEnvironmentFromCountryCode(countryCode), clientKey)
             when (result) {
                 is CheckoutSessionResult.Success -> handleCheckoutSessionSuccess(result.checkoutSession)
                 is CheckoutSessionResult.Error -> handleCheckoutSessionError(result.exception)
                 else -> handleCheckoutSessionError(CheckoutException("Unexpected resul from CheckoutSessionProvider"))
             }
+        }
+    }
+
+    private fun getEnvironmentFromCountryCode(countryCode: String): Environment {
+        when (countryCode) {
+            "AU" -> return Environment.AUSTRALIA
+            else -> return Environment.TEST
         }
     }
 
