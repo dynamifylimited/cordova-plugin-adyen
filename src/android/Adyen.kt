@@ -5,21 +5,9 @@ import android.content.Context
 import android.content.Intent
 import com.adyen.checkout.core.AdyenLogLevel
 import com.adyen.checkout.core.AdyenLogger
-import com.adyen.checkout.core.Environment
-import com.adyen.checkout.dropin.DropIn
-import com.adyen.checkout.dropin.SessionDropInCallback
-import com.adyen.checkout.dropin.SessionDropInResult
-import com.adyen.checkout.sessions.core.CheckoutSessionProvider
-import com.adyen.checkout.sessions.core.CheckoutSessionResult
 import com.adyen.checkout.sessions.core.SessionModel
-import com.adyen.checkout.sessions.core.SessionPaymentResult
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.apache.cordova.CallbackContext
-import org.apache.cordova.CordovaInterface
 import org.apache.cordova.CordovaPlugin
-import org.apache.cordova.CordovaWebView
 import org.apache.cordova.LOG
 import org.json.JSONArray
 import org.json.JSONObject
@@ -47,7 +35,7 @@ class Adyen : CordovaPlugin() {
                     val paymentRequest = parsePaymentRequest(options)
                     LOG.d(LOG_TAG, "Parsed payment request: $paymentRequest")
                     val context: Context = cordova.activity.applicationContext
-                    openNewActivity(context, paymentRequest)
+                    openAdyenActivity(context, paymentRequest)
                     return true
                 } catch (e: Exception) {
                     LOG.e(LOG_TAG, "Error parsing payment request", e)
@@ -63,14 +51,15 @@ class Adyen : CordovaPlugin() {
         return false
     }
 
-    private fun openNewActivity(context: Context, paymentRequest: PaymentRequest) {
+    private fun openAdyenActivity(context: Context, paymentRequest: PaymentRequest) {
         AdyenLogger.setLogLevel(
             AdyenLogLevel.DEBUG
         )
-        val intent = Intent(context, NewActivity::class.java)
+        val intent = Intent(context, AdyenActivity::class.java)
         val sessionModel: SessionModel = SessionModel.SERIALIZER.deserialize(paymentRequestToJson(paymentRequest))
         intent.putExtra("sessionModel", sessionModel)
         intent.putExtra("clientKey", paymentRequest.clientKey)
+        intent.putExtra("countryCode", paymentRequest.countryCode)
         cordova.setActivityResultCallback(this)
         cordova.activity.startActivityForResult(intent, REQUEST_CODE_NEW_ACTIVITY)
     }
@@ -80,30 +69,15 @@ class Adyen : CordovaPlugin() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
         if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
+            val adyenResultCode = intent?.getStringExtra("resultCode")
+            val resultJson = JSONObject()
+            resultJson.put("resultCode", adyenResultCode)
             when (resultCode) {
                 Activity.RESULT_OK -> {
-                    val paymentResult = intent?.getStringExtra("paymentResult")
-                    val error = intent?.getStringExtra("error")
-                    val resultJson = JSONObject()
-                    if (paymentResult != null) {
-                        LOG.d("PAYMENT_RESULT", paymentResult)
-                        // Handle successful payment result
-                        resultJson.put("status", "success")
-                        resultJson.put("paymentResult", paymentResult)
-                    } else if (error != null) {
-                        LOG.e("PAYMENT_ERROR", error)
-                        resultJson.put("status", "error")
-                        resultJson.put("paymentResult", error)
-                        // Handle payment error
-                    }
                     cordovaCallbackContext?.success(resultJson)
                 }
                 Activity.RESULT_CANCELED -> {
-                    LOG.d("PAYMENT_CANCELED", "Payment was cancelled by the user.")
-                    // Handle user cancellation
-                    val resultJson = JSONObject()
-                    resultJson.put("status", "cancelled")
-                    cordovaCallbackContext?.success(resultJson)
+                    cordovaCallbackContext?.error(resultJson)
                 }
             }
         }

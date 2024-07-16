@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-android-adyen"
+<plugin id="cordova-plugin-adyen"
 		version="0.0.1"
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns="http://apache.org/cordova/ns/plugins/1.0">
@@ -18,12 +18,11 @@
 			</feature>
 		</config-file>
 		 <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <activity android:label="New Activity" android:name="com.dynamify.plugin.adyen.NewActivity"  android:theme="@style/AppTheme"></activity>
+            <activity android:label="Adyen Activity" android:name="com.dynamify.plugin.adyen.AdyenActivity"  android:theme="@style/AdyenCheckout.Translucent"></activity>
         </config-file>
 		<source-file src="src/android/Adyen.kt" target-dir="src/main/kotlin/Adyen" />
-		<source-file src="src/android/NewActivity.kt" target-dir="src/main/kotlin/Adyen" />
-		<source-file src="src/android/ExampleDropInService.kt" target-dir="src/main/kotlin/Adyen" />
-        <source-file src="src/android/activity_new.xml" target-dir="res/layout"/>
+		<source-file src="src/android/AdyenActivity.kt" target-dir="src/main/kotlin/Adyen" />
+		<source-file src="src/android/adyen_activity.xml" target-dir="res/layout"/>
 		<framework src="src/android/build.gradle" custom="true" type="gradleReference" />
 	</platform>
 
