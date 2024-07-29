@@ -74,6 +74,7 @@ class AdyenActivity: AppCompatActivity() {
 
         when (countryCode) {
             "AU" -> return Environment.AUSTRALIA
+            "US" -> return Environment.UNITED_STATES
             else -> return Environment.TEST
         }
     }
