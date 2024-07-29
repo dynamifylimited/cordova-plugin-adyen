@@ -49,14 +49,16 @@ class AdyenActivity: AppCompatActivity() {
             return
         }
 
-        createPaymentSession(sessionModel, clientKey, countryCode)
+       val isTesting = intent.getBooleanExtra("isTesting", false)
+
+        createPaymentSession(sessionModel, clientKey, countryCode, isTesting)
     }
 
-    private fun createPaymentSession(sessionModel: SessionModel, clientKey: String, countryCode: String) {
+    private fun createPaymentSession(sessionModel: SessionModel, clientKey: String, countryCode: String, isTesting: Boolean) {
         LOG.d(LOG_TAG, "creating payment sessions for client key: $clientKey")
         lifecycleScope.launch {
             LOG.d(LOG_TAG, "calling CheckoutSessionProvider.createSession")
-            val result = CheckoutSessionProvider.createSession(sessionModel, getEnvironmentFromCountryCode(countryCode), clientKey)
+            val result = CheckoutSessionProvider.createSession(sessionModel, getEnvironmentFromCountryCode(countryCode,isTesting), clientKey)
             when (result) {
                 is CheckoutSessionResult.Success -> handleCheckoutSessionSuccess(result.checkoutSession)
                 is CheckoutSessionResult.Error -> handleCheckoutSessionError(result.exception)
@@ -65,7 +67,11 @@ class AdyenActivity: AppCompatActivity() {
         }
     }
 
-    private fun getEnvironmentFromCountryCode(countryCode: String): Environment {
+    private fun getEnvironmentFromCountryCode(countryCode: String, isTesting: Boolean): Environment {
+        if (isTesting) {
+            return Environment.TEST
+        }
+
         when (countryCode) {
             "AU" -> return Environment.AUSTRALIA
             else -> return Environment.TEST

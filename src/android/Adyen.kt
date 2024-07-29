@@ -26,6 +26,7 @@ class Adyen : CordovaPlugin() {
         args: JSONArray?,
         callbackContext: CallbackContext?
     ): Boolean {
+        AdyenLogger.setLogLevel(AdyenLogLevel.DEBUG)
         cordovaCallbackContext = callbackContext
         LOG.d(LOG_TAG, "Executing action: $action")
         if (action == "requestCharge") {
@@ -60,6 +61,7 @@ class Adyen : CordovaPlugin() {
         intent.putExtra("sessionModel", sessionModel)
         intent.putExtra("clientKey", paymentRequest.clientKey)
         intent.putExtra("countryCode", paymentRequest.countryCode)
+        intent.putExtra("isTesting", paymentRequest.isTesting)
         cordova.setActivityResultCallback(this)
         cordova.activity.startActivityForResult(intent, REQUEST_CODE_NEW_ACTIVITY)
     }
@@ -101,7 +103,8 @@ class Adyen : CordovaPlugin() {
             shopperLocale = options.optString(PaymentRequest.FIELD_SHOPPER_LOCALE, PaymentRequest.DEFAULT_LOCALE),
             mode = options.optString(PaymentRequest.FIELD_MODE, PaymentRequest.DEFAULT_MODE),
             sessionData = options.getString(PaymentRequest.FIELD_SESSION_DATA),
-            clientKey = options.getString(PaymentRequest.FIELD_CLIENT_KEY)
+            clientKey = options.getString(PaymentRequest.FIELD_CLIENT_KEY),
+            isTesting = options.getBoolean(PaymentRequest.FIELD_IS_TESTING)
         )
     }
 
@@ -109,7 +112,7 @@ class Adyen : CordovaPlugin() {
         return JSONObject().apply {
             put(PaymentRequest.FIELD_AMOUNT, JSONObject().apply {
                 put(PaymentRequest.FIELD_CURRENCY, paymentRequest.amount.currency)
-                put(PaymentRequest.FIELD_CURRENCY, paymentRequest.amount.value)
+                put(PaymentRequest.FIELD_VALUE, paymentRequest.amount.value)
             })
             put(PaymentRequest.FIELD_COUNTRY_CODE, paymentRequest.countryCode)
             put(PaymentRequest.FIELD_EXPIRES_AT, paymentRequest.expiresAt)
@@ -140,7 +143,8 @@ data class PaymentRequest(
     val shopperLocale: String,
     val mode: String,
     val sessionData: String,
-    val clientKey: String
+    val clientKey: String,
+    val isTesting: Boolean
 ) {
     companion object {
         const val FIELD_AMOUNT = "amount"
@@ -160,5 +164,6 @@ data class PaymentRequest(
         const val DEFAULT_LOCALE = "en-US"
         const val DEFAULT_MODE = "embedded"
         const val FIELD_CLIENT_KEY = "clientKey"
+        const val FIELD_IS_TESTING = "isTesting"
     }
 }
