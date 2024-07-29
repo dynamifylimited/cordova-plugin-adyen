@@ -56,7 +56,7 @@ import PassKit
     }
     
     
-    func presentt(viewController: UIViewController, completion: (() -> Void)?) {
+    func presentAdyenComponent(viewController: UIViewController, completion: (() -> Void)?) {
         // Ensure there is a visible view controller to present from
         guard let currentViewController = UIApplication.shared.keyWindow?.rootViewController else {
             fatalError("No root view controller available to present from.")
@@ -74,7 +74,7 @@ import PassKit
     
     private func presentComponent(with session: AdyenSession) {
         let dropIn = dropInComponent(from: session)
-        presentt(viewController: dropIn.viewController, completion: nil)
+        presentAdyenComponent(viewController: dropIn.viewController, completion: nil)
         dropInComponent = dropIn
     }
     
