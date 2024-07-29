@@ -12,7 +12,7 @@ internal protocol InitialDataFlowProtocolV1: AnyObject {
     
     func requestAdyenSessionConfiguration(sessionId: String, sessionData: String, context: AdyenContext, completion: @escaping (Result<AdyenSession.Configuration, Error>) -> Void)
     
-    func generateContext(clientKey: String, currencyCode: String, countryCode: String, value: Int) -> AdyenContext?
+    func generateContext(clientKey: String, currencyCode: String, countryCode: String, value: Int, isTesting: Bool) -> AdyenContext?
     
 }
 
@@ -24,12 +24,15 @@ extension InitialDataFlowProtocolV1 {
         ]
     }
     
-    private func environment(for countryCode: String) -> Environment {
+    private func environment(for countryCode: String, isTesting: Bool) -> Environment {
+        if (isTesting) {
+            return .test
+        }
         return environmentMapping[countryCode] ?? .test
     }
-    func generateContext(clientKey: String, currencyCode: String, countryCode: String, value: Int) -> AdyenContext? {
+    func generateContext(clientKey: String, currencyCode: String, countryCode: String, value: Int, isTesting: Bool) -> AdyenContext? {
         do {
-            let selectedEnvironment = environment(for: countryCode)
+            let selectedEnvironment = environment(for: countryCode, isTesting: isTesting)
             let apiContext = try APIContext(
                 environment: selectedEnvironment,
                 clientKey: clientKey

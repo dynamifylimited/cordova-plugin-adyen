@@ -27,6 +27,7 @@ import PassKit
               let shopperLocale = paymentRequest["shopperLocale"] as? String,
               let mode = paymentRequest["mode"] as? String,
               let sessionData = paymentRequest["sessionData"] as? String,
+              let isTesting = paymentRequest["isTesting"] as? Bool,
               let clientKey = paymentRequest["clientKey"] as? String else {
             sendErrorResult(resultCode: "Error", callbackId: self.callbackId)
             return
@@ -34,7 +35,7 @@ import PassKit
         
 //        AdyenLogging.isEnabled = true
         self.callbackId = command.callbackId
-        self.context = generateContext(clientKey: clientKey, currencyCode: currency, countryCode: countryCode, value: value)
+        self.context = generateContext(clientKey: clientKey, currencyCode: currency, countryCode: countryCode, value: value, isTesting: isTesting)
         self.sessionId = id
         self.SessionData = sessionData
         self.clientKey = clientKey
