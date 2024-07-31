@@ -37,6 +37,8 @@
         <source-file src="src/ios/InitialDataFlowProtocolV1.swift" />
         <source-file src="src/ios/PresenterExampleProtocol.swift" />
         <podspec>
+            <config>
+            </config>
             <pods use-frameworks="true">
                 <pod name="Adyen" />
             </pods>
