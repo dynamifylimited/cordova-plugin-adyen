@@ -1,38 +1,32 @@
-# Cordova Square Android plugin
+# Cordova Adyen mobile plugin
 
-> A plugin for Square pos implementation for android. 
+> A plugin for Adyen pos implementation for android and iOS.
 
 ## Installation
 
 ```
-cordova plugin add https://github.com/dynamifylimited/cordova-plugin-judopay-googlepay
+cordova plugin add https://github.com/abhinax4991/cordova-plugin-adyen
 ```
-```
-
-
-For testing and producing screenshots of your buyflow for submission to Google:
-```
-<preference name="GooglePayEnvironment" value="test" />
 ```
 
 ## Usage
 
-`makePaymentRequest()` initiates pay session.
+`requestCharge()` initiates pay session.
 
 ```
- let request = {
-    amount: decimalTotal,
-    countryCode: countryCode,
-    currencyCode: currencyCode,
-    judoId: judopayIdForGooglePay,
-    token: judopayApiTokenForGooglePay,
-    paymentSession: reference,
-      consumerReference: consumerReference
-  };
-cordova.plugins.JudopayGooglePay.makePaymentRequest(request).then(function (receiptId) {
-        // in success callback, raw response as encoded JSON is returned. Pass it to your payment processor as is.
-     
-   })
+const credentialsRequestBody = {
+currencyCode,
+countryCode,
+storeId: $scope.store.id,
+amount: saleAmount
+}
+
+AdyenService.getAdyenCredentials(credentialsRequestBody).then(function(credentialsData) {
+cordova.plugins.adyen.requestCharge(credentialsData.data, function (requestChargeData) {
+// in success callback, raw response as encoded JSON is returned. Pass it to your payment processor as is.
+
+    });
+});
 ```
 
 All parameters in request object are required.
