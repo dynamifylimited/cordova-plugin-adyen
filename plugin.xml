@@ -1,32 +1,32 @@
 <?xml version='1.0' encoding='utf-8'?>
 <plugin id="cordova-plugin-adyen"
-		version="0.0.1"
-		xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns="http://apache.org/cordova/ns/plugins/1.0">
-	<name>Adyen</name>
-	<js-module name="Adyen"
-			   src="www/adyen.js">
-		<clobbers target="cordova.plugins.adyen" />
-	</js-module>
-	<platform name="android">
-		<config-file target="res/xml/config.xml" parent="/*">
-		  <preference name="GradlePluginKotlinEnabled" value="true" />
-		  <preference name="GradlePluginKotlinCodeStyle" value="official" />
-		  <preference name="GradlePluginKotlinVersion" value="1.9.23" />
-			<feature name="Adyen">
-				<param name="android-package" value="com.dynamify.plugin.adyen.Adyen"/>
-			</feature>
-		</config-file>
-		 <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <activity android:label="Adyen Activity" android:name="com.dynamify.plugin.adyen.AdyenActivity"  android:theme="@style/AdyenCheckout.Translucent"></activity>
+        version="0.0.1"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns="http://apache.org/cordova/ns/plugins/1.0">
+    <name>Adyen</name>
+    <js-module name="Adyen"
+               src="www/adyen.js">
+        <clobbers target="cordova.plugins.adyen" />
+    </js-module>
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <preference name="GradlePluginKotlinEnabled" value="true" />
+            <preference name="GradlePluginKotlinCodeStyle" value="official" />
+            <preference name="GradlePluginKotlinVersion" value="1.9.23" />
+            <feature name="Adyen">
+                <param name="android-package" value="com.dynamify.plugin.adyen.Adyen" />
+            </feature>
         </config-file>
-		<source-file src="src/android/Adyen.kt" target-dir="src/main/kotlin/Adyen" />
-		<source-file src="src/android/AdyenActivity.kt" target-dir="src/main/kotlin/Adyen" />
-		<source-file src="src/android/adyen_activity.xml" target-dir="res/layout"/>
-		<framework src="src/android/build.gradle" custom="true" type="gradleReference" />
-	</platform>
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:label="Adyen Activity" android:name="com.dynamify.plugin.adyen.AdyenActivity" android:theme="@style/AdyenCheckout.Translucent"></activity>
+        </config-file>
+        <source-file src="src/android/Adyen.kt" target-dir="src/main/kotlin/Adyen" />
+        <source-file src="src/android/AdyenActivity.kt" target-dir="src/main/kotlin/Adyen" />
+        <source-file src="src/android/adyen_activity.xml" target-dir="res/layout" />
+        <framework src="src/android/build.gradle" custom="true" type="gradleReference" />
+    </platform>
 
-	<!-- iOS platform configuration -->
+    <!-- iOS platform configuration -->
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
             <feature name="Adyen">
@@ -34,9 +34,9 @@
             </feature>
         </config-file>
         <source-file src="src/ios/Adyen.swift" />
-		<source-file src="src/ios/InitialDataFlowProtocolV1.swift" />
-		<source-file src="src/ios/PresenterExampleProtocol.swift" />
-		 <podspec>
+        <source-file src="src/ios/InitialDataFlowProtocolV1.swift" />
+        <source-file src="src/ios/PresenterExampleProtocol.swift" />
+        <podspec>
             <pods use-frameworks="true">
                 <pod name="Adyen" />
             </pods>

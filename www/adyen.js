@@ -1,4 +1,3 @@
-
 var exec = require('cordova/exec');
 
 var adyenExport = {};
@@ -6,7 +5,7 @@ var adyenExport = {};
 
 adyenExport.setOptions =
     function(options, successCallback, failureCallback) {
-        if(typeof options === 'object'
+        if (typeof options === 'object'
             && typeof options.applicationId === 'string'
             && options.applicationId.length > 0) {
             return exec(
@@ -17,7 +16,7 @@ adyenExport.setOptions =
                 [options]
             );
         } else {
-            if(typeof failureCallback === 'function') {
+            if (typeof failureCallback === 'function') {
                 failureCallback('options.applicationId should be specified.');
             }
         }
@@ -35,10 +34,9 @@ adyenExport.requestCharge =
     };
 
 
-adyenExport.echo = 
+adyenExport.echo =
     function(arg0, success, error) {
-       return exec(success, error, "Adyen", "echo", [arg0]);
-      
+        return exec(success, error, "Adyen", "echo", [arg0]);
     };
 
 module.exports = adyenExport;
