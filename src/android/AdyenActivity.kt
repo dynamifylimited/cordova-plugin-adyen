@@ -18,6 +18,9 @@ import com.adyen.checkout.sessions.core.CheckoutSessionProvider
 import com.adyen.checkout.sessions.core.CheckoutSessionResult
 import com.adyen.checkout.sessions.core.SessionModel
 import com.adyen.checkout.sessions.core.SessionPaymentResult
+import com.adyen.checkout.core.CheckoutConfiguration
+import com.adyen.checkout.googlepay.GooglePayConfiguration
+import com.google.android.gms.wallet.WalletConstants
 import kotlinx.coroutines.launch
 import org.apache.cordova.LOG
 
@@ -30,6 +33,8 @@ class AdyenActivity: AppCompatActivity() {
     private lateinit var dropInLauncher: ActivityResultLauncher<SessionDropInResultContractParams>
     private lateinit var sessionModel: SessionModel
     private lateinit var clientKey: String
+    private lateinit var countryCode: String
+    private var isTesting: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         LOG.d(LOG_TAG, "on create")
@@ -44,12 +49,12 @@ class AdyenActivity: AppCompatActivity() {
             return
         }
 
-       val countryCode = intent.getStringExtra("countryCode") ?: run {
+        countryCode = intent.getStringExtra("countryCode") ?: run {
             handleCheckoutSessionError(CheckoutException("countryCode is missing"))
             return
         }
 
-       val isTesting = intent.getBooleanExtra("isTesting", false)
+        isTesting = intent.getBooleanExtra("isTesting", false)
 
         createPaymentSession(sessionModel, clientKey, countryCode, isTesting)
     }
@@ -72,21 +77,64 @@ class AdyenActivity: AppCompatActivity() {
             return Environment.TEST
         }
 
-        when (countryCode) {
-            "AU" -> return Environment.AUSTRALIA
-            "US" -> return Environment.UNITED_STATES
-            else -> return Environment.TEST
+        return when (countryCode.uppercase()) {
+            "AU" -> Environment.AUSTRALIA
+            "US" -> Environment.UNITED_STATES
+
+            // Europe (most EU merchant accounts)
+            "NL", "DE", "FR", "BE", "ES", "IT", "PT", "IE",
+            "AT", "FI", "SE", "NO", "DK", "PL", "CZ", "SK",
+            "HU", "RO", "BG", "HR", "SI", "LT", "LV", "EE",
+            "LU", "MT", "CY", "GR" -> Environment.EUROPE
+
+            // United Kingdom
+            "GB", "UK" -> Environment.EUROPE
+
+            // Canada (Adyen routes via US live)
+            "CA" -> Environment.UNITED_STATES
+
+            // Default fallback (IMPORTANT: must be live, not TEST)
+            else -> Environment.EUROPE
         }
     }
 
     private fun handleCheckoutSessionError(exception: CheckoutException) {
-        LOG.d(LOG_TAG, "Error while creating checkout sessions")
+        LOG.e(LOG_TAG, "Error while creating checkout session: ${exception.message}", exception)
         setResultAndFinish(PaymentStatus.ERROR, Activity.RESULT_CANCELED)
     }
 
     private fun handleCheckoutSessionSuccess(checkoutSession: CheckoutSession) {
         try {
-            DropIn.startPayment(this, dropInLauncher, checkoutSession)
+            // Read Google Pay values passed from the Cordova plugin
+            val googlePayMerchantName = intent.getStringExtra("googlePayMerchantName")
+            val googlePayMerchantId = intent.getStringExtra("googlePayMerchantId")
+            val googlePayGatewayMerchantId = intent.getStringExtra("googlePayGatewayMerchantId")
+            val hasGooglePayConfig =
+                !googlePayMerchantName.isNullOrBlank() &&
+                        !googlePayMerchantId.isNullOrBlank() &&
+                        !googlePayGatewayMerchantId.isNullOrBlank()
+
+            if (hasGooglePayConfig) {
+                val adyenEnv = getEnvironmentFromCountryCode(countryCode, isTesting)
+                val googlePayConfig = GooglePayConfiguration.Builder(this, clientKey, adyenEnv)
+                    .setGooglePayEnvironment(
+                        if (isTesting) WalletConstants.ENVIRONMENT_TEST
+                        else WalletConstants.ENVIRONMENT_PRODUCTION
+                    )
+                    .setMerchantName(googlePayMerchantName!!)
+                    .setMerchantId(googlePayMerchantId!!)
+                    .setGatewayMerchantId(googlePayGatewayMerchantId!!)
+                    .build()
+
+                val checkoutConfig = CheckoutConfiguration.Builder(this, clientKey, adyenEnv)
+                    .addGooglePayConfiguration(googlePayConfig)
+                    .build()
+
+                DropIn.startPayment(this, dropInLauncher, checkoutSession, checkoutConfig)
+            } else {
+                // Google Pay not configured → start Drop-in without it
+                DropIn.startPayment(this, dropInLauncher, checkoutSession)
+            }
         } catch (e: Exception) {
             LOG.e(LOG_TAG, "Error starting DropIn payment: ${e.message}", e)
             setResultAndFinish(PaymentStatus.ERROR, Activity.RESULT_CANCELED)
@@ -171,10 +219,9 @@ class AdyenSessionDropInCallback(private val activity: Activity): SessionDropInC
                 }
                 .setCancelable(false)
                 .show()
-        }
+            }
         }
     }
-
 
     override fun onDropInResult(sessionDropInResult: SessionDropInResult?) {
         LOG.d(LOG_TAG, sessionDropInResult.toString())
@@ -189,7 +236,6 @@ class AdyenSessionDropInCallback(private val activity: Activity): SessionDropInC
             null -> handleUnexpectedState()
         }
     }
-
 }
 
 object PaymentStatus {
