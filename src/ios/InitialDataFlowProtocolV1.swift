@@ -53,7 +53,7 @@ extension InitialDataFlowProtocolV1 {
             "HK": .liveApse,
             "ID": .liveApse,
             "JP": .liveApse,
-            "KH": .liveApse
+            "KH": .liveApse,
             "KR": .liveApse,
             "MY": .liveApse,
             "PH": .liveApse,
@@ -76,7 +76,7 @@ extension InitialDataFlowProtocolV1 {
             "AS": .liveEurope,
             "BL": .liveEurope,
             "AE": .liveEurope,
-            "MX": .liveEurope,
+            "MX": .liveEurope
             // Add more mappings as needed
         ]
     }
