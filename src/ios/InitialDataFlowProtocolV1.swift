@@ -20,6 +20,7 @@ extension InitialDataFlowProtocolV1 {
     private var environmentMapping: [String: Environment] {
         return [
             "AU": .liveAustralia,
+            "DE": .liveEurope,
             "US": .liveUnitedStates
             // Add more mappings as needed
         ]
