@@ -85,7 +85,7 @@ extension InitialDataFlowProtocolV1 {
         if (isTesting) {
             return .test
         }
-        return environmentMapping[countryCode] ?? .test
+        return environmentMapping[countryCode] ?? .liveEurope
     }
     func generateContext(clientKey: String, currencyCode: String, countryCode: String, value: Int, isTesting: Bool) -> AdyenContext? {
         do {
