@@ -10,7 +10,7 @@ import PassKit
     private var dropInComponent: DropInComponent?
     private var callbackId: String = ""
     private var dropInConfiguration: DropInComponent.Configuration? = nil
-    private var merchantIdentifier = "merchant.com.dynamifyadyen"
+    private var merchantIdentifier = "merchant.com.adyen.dynamifyadyen"
         
     @objc(requestCharge:)
     func requestCharge(command: CDVInvokedUrlCommand) {
