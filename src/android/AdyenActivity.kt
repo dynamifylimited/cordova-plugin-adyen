@@ -18,7 +18,7 @@ import com.adyen.checkout.sessions.core.CheckoutSessionProvider
 import com.adyen.checkout.sessions.core.CheckoutSessionResult
 import com.adyen.checkout.sessions.core.SessionModel
 import com.adyen.checkout.sessions.core.SessionPaymentResult
-import com.adyen.checkout.core.CheckoutConfiguration
+import com.adyen.checkout.dropin.DropInConfiguration
 import com.adyen.checkout.googlepay.GooglePayConfiguration
 import com.google.android.gms.wallet.WalletConstants
 import kotlinx.coroutines.launch
@@ -116,21 +116,19 @@ class AdyenActivity: AppCompatActivity() {
 
             if (hasGooglePayConfig) {
                 val adyenEnv = getEnvironmentFromCountryCode(countryCode, isTesting)
-                val googlePayConfig = GooglePayConfiguration.Builder(this, clientKey, adyenEnv)
+                val googlePayConfig = GooglePayConfiguration.Builder(this, adyenEnv, clientKey)
                     .setGooglePayEnvironment(
                         if (isTesting) WalletConstants.ENVIRONMENT_TEST
                         else WalletConstants.ENVIRONMENT_PRODUCTION
                     )
-                    .setMerchantName(googlePayMerchantName!!)
-                    .setMerchantId(googlePayMerchantId!!)
-                    .setGatewayMerchantId(googlePayGatewayMerchantId!!)
+                    .setMerchantAccount(googlePayMerchantId!!)
                     .build()
 
-                val checkoutConfig = CheckoutConfiguration.Builder(this, clientKey, adyenEnv)
+                val dropInConfig = DropInConfiguration.Builder(this, adyenEnv, clientKey)
                     .addGooglePayConfiguration(googlePayConfig)
                     .build()
 
-                DropIn.startPayment(this, dropInLauncher, checkoutSession, checkoutConfig)
+                DropIn.startPayment(this, dropInLauncher, checkoutSession, dropInConfig)
             } else {
                 // Google Pay not configured → start Drop-in without it
                 DropIn.startPayment(this, dropInLauncher, checkoutSession)
