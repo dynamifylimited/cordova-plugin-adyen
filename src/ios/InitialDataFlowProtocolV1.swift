@@ -18,9 +18,65 @@ internal protocol InitialDataFlowProtocolV1: AnyObject {
 
 extension InitialDataFlowProtocolV1 {
     private var environmentMapping: [String: Environment] {
+        // environment cases:
+        // test
+        // liveEurope
+        // liveAustralia
+        // liveUnitedStates
+        // liveApse
+        // liveIndia
+        // assuming default is liveEurope
         return [
             "AU": .liveAustralia,
-            "US": .liveUnitedStates
+
+            "CA": .liveUnitedStates,
+            "US": .liveUnitedStates,
+
+            "AX": .liveEurope,
+            "BE": .liveEurope,
+            "CZ": .liveEurope,
+            "DE": .liveEurope,
+            "DK": .liveEurope,
+            "ES": .liveEurope,
+            "FI": .liveEurope,
+            "FR": .liveEurope,
+            "GB": .liveEurope,
+            "IE": .liveEurope,
+            "LU": .liveEurope,
+            "NL": .liveEurope,
+            "NO": .liveEurope,
+            "PL": .liveEurope,
+            "PT": .liveEurope,
+            "SE": .liveEurope,
+
+            "CN": .liveApse,
+            "HK": .liveApse,
+            "ID": .liveApse,
+            "JP": .liveApse,
+            "KH": .liveApse,
+            "KR": .liveApse,
+            "MY": .liveApse,
+            "PH": .liveApse,
+            "SG": .liveApse,
+            "TH": .liveApse,
+            "VN": .liveApse,
+
+            "IN": .liveIndia,
+
+            // unsorted
+            "BR": .liveEurope,
+            "IL": .liveEurope,
+            "CH": .liveEurope,
+            "CO": .liveEurope,
+            "CL": .liveEurope,
+            "TR": .liveEurope,
+            "ZA": .liveEurope,
+            "CD": .liveEurope,
+            "BQ": .liveEurope,
+            "AS": .liveEurope,
+            "BL": .liveEurope,
+            "AE": .liveEurope,
+            "MX": .liveEurope
             // Add more mappings as needed
         ]
     }
@@ -29,7 +85,7 @@ extension InitialDataFlowProtocolV1 {
         if (isTesting) {
             return .test
         }
-        return environmentMapping[countryCode] ?? .test
+        return environmentMapping[countryCode] ?? .liveEurope
     }
     func generateContext(clientKey: String, currencyCode: String, countryCode: String, value: Int, isTesting: Bool) -> AdyenContext? {
         do {
