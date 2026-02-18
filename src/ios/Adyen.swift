@@ -33,7 +33,7 @@ import PassKit
             return
         }
         
-//        AdyenLogging.isEnabled = true
+       AdyenLogging.isEnabled = true
         self.callbackId = command.callbackId
         self.context = generateContext(clientKey: clientKey, currencyCode: currency, countryCode: countryCode, value: value, isTesting: isTesting)
         self.sessionId = id
@@ -84,7 +84,7 @@ import PassKit
             let dropInConfiguration = DropInComponent.Configuration()
             let amount = Amount(value: value, currencyCode: currencyCode)
             let payment = Payment(amount: amount, countryCode: countryCode)
-            let applePayPayment = try ApplePayPayment(payment: payment, brand: "app")
+            let applePayPayment = try ApplePayPayment(payment: payment, brand: "Everyday")
             dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: self.merchantIdentifier)
             return dropInConfiguration
         } catch {
