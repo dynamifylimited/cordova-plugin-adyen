@@ -88,23 +88,18 @@ import PassKit
             //dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: self.merchantIdentifier)
             //return dropInConfiguration
 
-            let dropInConfiguration = DropInComponent.Configuration()
-
-            let summaryItems = [
+            let paymentRequest = PKPaymentRequest()
+            paymentRequest.merchantIdentifier = self.merchantIdentifier
+            paymentRequest.countryCode = countryCode
+            paymentRequest.currencyCode = currencyCode
+            paymentRequest.supportedNetworks = [.visa, .masterCard, .amex]
+            paymentRequest.merchantCapabilities = .capability3DS
+            paymentRequest.paymentSummaryItems = [
                 PKPaymentSummaryItem(label: "Everyday", amount: NSDecimalNumber(value: Double(value) / 100.0), type: .final)
             ]
 
-            let applePayment = try ApplePayPayment(
-                countryCode: countryCode,
-                currencyCode: currencyCode,
-                summaryItems: summaryItems
-            )
-
-            dropInConfiguration.applePay = .init(
-                payment: applePayment,
-                merchantIdentifier: self.merchantIdentifier
-            )
-
+            let dropInConfiguration = DropInComponent.Configuration()
+            dropInConfiguration.applePay = try? .init(paymentRequest: paymentRequest)
             return dropInConfiguration
 
         } catch {
