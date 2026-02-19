@@ -32,8 +32,13 @@ import PassKit
             sendErrorResult(resultCode: "Error", callbackId: self.callbackId)
             return
         }
-        
-       AdyenLogging.isEnabled = true
+
+        // Allow merchant identifier to be passed from JS; fall back to default
+        if let customMerchantId = paymentRequest["merchantIdentifier"] as? String, !customMerchantId.isEmpty {
+            self.merchantIdentifier = customMerchantId
+        }
+
+        AdyenLogging.isEnabled = true
         self.callbackId = command.callbackId
         self.context = generateContext(clientKey: clientKey, currencyCode: currency, countryCode: countryCode, value: value, isTesting: isTesting)
         self.sessionId = id
@@ -79,31 +84,44 @@ import PassKit
     }
 
     private func initializeApplePay(currencyCode: String, countryCode: String, value: Int) -> DropInComponent.Configuration {
-        print("initializeing apple pay")
-        do {
-            //let dropInConfiguration = DropInComponent.Configuration()
-            //let amount = Amount(value: value, currencyCode: currencyCode)
-            //let payment = Payment(amount: amount, countryCode: countryCode)
-            //let applePayPayment = try ApplePayPayment(payment: payment, brand: "app")
-            //dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: self.merchantIdentifier)
-            //return dropInConfiguration
 
+        let dropInConfiguration = DropInComponent.Configuration()
+
+        // Check if device supports Apple Pay before attempting configuration
+        if !PKPaymentAuthorizationViewController.canMakePayments() {
+            print("Apple Pay Error: Device does not support Apple Pay")
+            return dropInConfiguration
+        }
+
+        do {
+            let amount = Amount(value: value, currencyCode: currencyCode)
+            let payment = Payment(amount: amount, countryCode: countryCode)
+            let applePayPayment = try ApplePayPayment(payment: payment, brand: "Everyday")
+            dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: self.merchantIdentifier)
+            print("Apple Pay configured successfully")
+            return dropInConfiguration
+        } catch {
+            print("Apple Pay configuration failed with ApplePayPayment: \(error.localizedDescription)")
+        }
+
+        // Fallback: try PKPaymentRequest approach
+        do {
             let paymentRequest = PKPaymentRequest()
             paymentRequest.merchantIdentifier = self.merchantIdentifier
             paymentRequest.countryCode = countryCode
             paymentRequest.currencyCode = currencyCode
-            paymentRequest.supportedNetworks = [.visa, .masterCard, .amex]
+            paymentRequest.supportedNetworks = [.visa, .masterCard, .amex, .discover]
             paymentRequest.merchantCapabilities = .capability3DS
             paymentRequest.paymentSummaryItems = [
                 PKPaymentSummaryItem(label: "Everyday", amount: NSDecimalNumber(value: Double(value) / 100.0), type: .final)
             ]
 
-            let dropInConfiguration = DropInComponent.Configuration()
-            dropInConfiguration.applePay = try? .init(paymentRequest: paymentRequest)
+            dropInConfiguration.applePay = try .init(paymentRequest: paymentRequest)
+            print("Apple Pay configured successfully (PKPaymentRequest fallback)")
             return dropInConfiguration
-
         } catch {
-            return DropInComponent.Configuration()
+            print("Apple Pay configuration failed with PKPaymentRequest: \(error.localizedDescription)")
+            return dropInConfiguration
         }
     }
 
