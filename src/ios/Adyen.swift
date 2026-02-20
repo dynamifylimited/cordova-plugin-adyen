@@ -1,5 +1,6 @@
 import Adyen
 import PassKit
+
 @objc(Adyen) class Adyen: CDVPlugin, InitialDataFlowProtocolV1 {
 
     private var session: AdyenSession?
@@ -11,7 +12,22 @@ import PassKit
     private var callbackId: String = ""
     private var dropInConfiguration: DropInComponent.Configuration? = nil
     private var merchantIdentifier = "merchant.com.adyen.dynamifyadyen"
-        
+    private var sessionCompleted = false
+
+    override func pluginInitialize() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(adyenHandleOpenURL(_:)),
+            name: NSNotification.Name.CDVPluginHandleOpenURL,
+            object: nil
+        )
+    }
+
+    @objc func adyenHandleOpenURL(_ notification: NSNotification) {
+        guard let url = notification.object as? URL else { return }
+        RedirectComponent.applicationDidOpen(from: url)
+    }
+
     @objc(requestCharge:)
     func requestCharge(command: CDVInvokedUrlCommand) {
         guard let paymentRequest = command.argument(at: 0) as? [String: Any],
@@ -40,12 +56,14 @@ import PassKit
 
         AdyenLogging.isEnabled = true
         self.callbackId = command.callbackId
+        self.sessionCompleted = false
         self.context = generateContext(clientKey: clientKey, currencyCode: currency, countryCode: countryCode, value: value, isTesting: isTesting)
         self.sessionId = id
         self.SessionData = sessionData
         self.clientKey = clientKey
 
-        self.dropInConfiguration = initializeApplePay(currencyCode: currency, countryCode: countryCode, value: value)
+        self.dropInConfiguration = initializeApplePay(currencyCode: currency, countryCode: countryCode, value: value, returnUrl: returnUrl)
+
 
         loadSession { [weak self] response in
             guard let self else { return }
@@ -83,9 +101,16 @@ import PassKit
         dropInComponent = dropIn
     }
 
-    private func initializeApplePay(currencyCode: String, countryCode: String, value: Int) -> DropInComponent.Configuration {
+    private func initializeApplePay(currencyCode: String, countryCode: String, value: Int, returnUrl: String) -> DropInComponent.Configuration {
 
         let dropInConfiguration = DropInComponent.Configuration()
+
+        if let url = URL(string: returnUrl) {
+            dropInConfiguration.actionComponent.threeDS.requestorAppURL = url
+               print("Return URL configured: \(returnUrl)")
+           } else {
+               print("Invalid return URL: \(returnUrl)")
+           }
 
         // Check if device supports Apple Pay before attempting configuration
         if !PKPaymentAuthorizationViewController.canMakePayments() {
@@ -199,7 +224,6 @@ import PassKit
 
 
     private func dismissAndShowAlert(withTitle: String, message : String, resultCode: String) {
-        //        let title = success ? "Success" : "Error"
         let alertController = UIAlertController(title: withTitle, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         alertController.addAction(okAction)
@@ -208,12 +232,14 @@ import PassKit
             fatalError("No root view controller available to present the alert.")
         }
 
-        DispatchQueue.main.async {
-            if let presentedViewController = topViewController.presentedViewController {
-                presentedViewController.dismiss(animated: true) {
-                    topViewController.present(alertController, animated: true, completion: nil)
-                }
-            } else {
+        let isSuccess = (resultCode == "Authorised" || resultCode == "Received" || resultCode == "Pending" || resultCode == "PresentToShopper")
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+
+            self.dropInComponent?.finalizeIfNeeded(with: isSuccess) {}
+
+            topViewController.dismiss(animated: true) {
                 topViewController.present(alertController, animated: true, completion: nil)
             }
 
@@ -233,15 +259,14 @@ import PassKit
             guard let self else { return }
             if let presentedViewController = topViewController.presentedViewController {
                 presentedViewController.dismiss(animated: true) { [weak self] in
+                    guard let self else { return }
                     print("dismissing top view controller")
-                    self?.handlePluginResult(resultCode: "Cancelled" , callbackId: self!.callbackId)
+                    if !self.sessionCompleted {
+                        self.handlePluginResult(resultCode: "Cancelled", callbackId: self.callbackId)
+                    }
                 }
-            } else {
-                //                    topViewController.present(alertController, animated: true, completion: nil)
             }
-
         }
-
     }
 
     func handlePluginResult(resultCode: String, callbackId: String) {
@@ -273,6 +298,7 @@ extension Adyen: AdyenSessionDelegate {
 
     func didComplete(with result: AdyenSessionResult, component: Component, session: AdyenSession) {
         print("adyen sesion result" , result.resultCode)
+        sessionCompleted = true
         switch result.resultCode {
         case SessionPaymentResultCode.authorised:
             dismissAndShowAlert(withTitle: "Success", message: "Payment successful", resultCode: result.resultCode.rawValue)
@@ -295,6 +321,7 @@ extension Adyen: AdyenSessionDelegate {
     func didFail(with error: Error, from component: Component, session: AdyenSession) {
         print("adyen session failed")
         print(error)
+        if sessionCompleted { return }
         switch error {
         case ComponentError.cancelled:
             dismissDropIn()
