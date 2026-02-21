@@ -33,7 +33,7 @@ import PassKit
             return
         }
         
-       AdyenLogging.isEnabled = true
+        AdyenLogging.isEnabled = true
         self.callbackId = command.callbackId
         self.context = generateContext(clientKey: clientKey, currencyCode: currency, countryCode: countryCode, value: value, isTesting: isTesting)
         self.sessionId = id
@@ -79,7 +79,7 @@ import PassKit
     }
     
     private func initializeApplePay(currencyCode: String, countryCode: String, value: Int) -> DropInComponent.Configuration {
-        print("initializeing apple pay")
+        print("initializing apple pay")
         do {
             let dropInConfiguration = DropInComponent.Configuration()
             let amount = Amount(value: value, currencyCode: currencyCode)
@@ -95,10 +95,12 @@ import PassKit
     private func dropInComponent(from session: AdyenSession) -> DropInComponent {
         let paymentMethods = session.sessionContext.paymentMethods
         let dropInConfiguration = self.dropInConfiguration!
-        let component = DropInComponent(paymentMethods: paymentMethods,
-                                        context: self.context!,
-                                        configuration: dropInConfiguration,
-                                        title:"app")
+        let component = DropInComponent(
+            paymentMethods: paymentMethods,
+            context: self.context!,
+            configuration: dropInConfiguration,
+            title:"app"
+        )
         component.delegate = session
         component.partialPaymentDelegate = session
         return component
