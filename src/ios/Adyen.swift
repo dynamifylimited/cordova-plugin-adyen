@@ -11,7 +11,6 @@ import PassKit
     private var dropInComponent: DropInComponent?
     private var callbackId: String = ""
     private var dropInConfiguration: DropInComponent.Configuration? = nil
-    private var merchantIdentifier = "merchant.com.adyen.dynamifyadyen"
     private var sessionCompleted = false
 
     override func pluginInitialize() {
@@ -49,11 +48,6 @@ import PassKit
             return
         }
 
-        // Allow merchant identifier to be passed from JS; fall back to default
-        if let customMerchantId = paymentRequest["merchantIdentifier"] as? String, !customMerchantId.isEmpty {
-            self.merchantIdentifier = customMerchantId
-        }
-
         AdyenLogging.isEnabled = true
         self.callbackId = command.callbackId
         self.sessionCompleted = false
@@ -62,8 +56,16 @@ import PassKit
         self.SessionData = sessionData
         self.clientKey = clientKey
 
-        self.dropInConfiguration = initializeApplePay(currencyCode: currency, countryCode: countryCode, value: value, returnUrl: returnUrl)
+        let mid = ((paymentRequest["merchantIdentifier"] as? String) ?? "merchant.com.adyen.dynamifyadyen")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
+        self.dropInConfiguration = initializeApplePay(
+            merchantIdentifier: mid,
+            currencyCode: currency,
+            countryCode: countryCode,
+            value: value,
+            returnUrl: returnUrl
+        )
 
         loadSession { [weak self] response in
             guard let self else { return }
@@ -101,7 +103,7 @@ import PassKit
         dropInComponent = dropIn
     }
 
-    private func initializeApplePay(currencyCode: String, countryCode: String, value: Int, returnUrl: String) -> DropInComponent.Configuration {
+    private func initializeApplePay(merchantIdentifier: String, currencyCode: String, countryCode: String, value: Int, returnUrl: String) -> DropInComponent.Configuration {
 
         let dropInConfiguration = DropInComponent.Configuration()
 
@@ -119,33 +121,36 @@ import PassKit
         }
 
         do {
-            let amount = Amount(value: value, currencyCode: currencyCode)
-            let payment = Payment(amount: amount, countryCode: countryCode)
-            let applePayPayment = try ApplePayPayment(payment: payment, brand: "Everyday")
-            dropInConfiguration.applePay = .init(payment: applePayPayment, merchantIdentifier: self.merchantIdentifier)
-            print("Apple Pay configured successfully")
-            return dropInConfiguration
-        } catch {
-            print("Apple Pay configuration failed with ApplePayPayment: \(error.localizedDescription)")
-        }
-
-        // Fallback: try PKPaymentRequest approach
-        do {
             let paymentRequest = PKPaymentRequest()
-            paymentRequest.merchantIdentifier = self.merchantIdentifier
+            paymentRequest.merchantIdentifier = merchantIdentifier
             paymentRequest.countryCode = countryCode
             paymentRequest.currencyCode = currencyCode
-            paymentRequest.supportedNetworks = [.visa, .masterCard, .amex, .discover]
-            paymentRequest.merchantCapabilities = .capability3DS
+            paymentRequest.supportedNetworks = [
+                .visa,
+                .masterCard,
+                .amex,
+                .discover,
+                .maestro
+            ]
+            paymentRequest.merchantCapabilities = [.capability3DS]
+
+            // Safe currency conversion
+            let amount = Decimal(value) / 100
+            let nsAmount = NSDecimalNumber(decimal: amount)
             paymentRequest.paymentSummaryItems = [
-                PKPaymentSummaryItem(label: "Everyday", amount: NSDecimalNumber(value: Double(value) / 100.0), type: .final)
+                PKPaymentSummaryItem(label: "Everyday",
+                                     amount: nsAmount,
+                                     type: .final)
             ]
 
-            dropInConfiguration.applePay = try .init(paymentRequest: paymentRequest)
+            var applePayConfig = try ApplePayComponent.Configuration(paymentRequest: paymentRequest)
+            applePayConfig.allowOnboarding = true   // <-- key for “Apple Pay not shown” on devices without a suitable card
+
+            dropInConfiguration.applePay = applePayConfig
             print("Apple Pay configured successfully (PKPaymentRequest fallback)")
             return dropInConfiguration
         } catch {
-            print("Apple Pay configuration failed with PKPaymentRequest: \(error.localizedDescription)")
+            print("Apple Pay configuration failed with ApplePayPayment: \(error.localizedDescription)")
             return dropInConfiguration
         }
     }
