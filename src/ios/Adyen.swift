@@ -158,10 +158,12 @@ import PassKit
     private func dropInComponent(from session: AdyenSession) -> DropInComponent {
         let paymentMethods = session.sessionContext.paymentMethods
         let dropInConfiguration = self.dropInConfiguration!
-        let component = DropInComponent(paymentMethods: paymentMethods,
-                                        context: self.context!,
-                                        configuration: dropInConfiguration,
-                                        title:"app")
+        let component = DropInComponent(
+            paymentMethods: paymentMethods,
+            context: self.context!,
+            configuration: dropInConfiguration,
+            title:"Everyday"
+        )
         component.delegate = session
         component.partialPaymentDelegate = session
         return component
