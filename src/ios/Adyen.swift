@@ -99,7 +99,7 @@ import PassKit
             paymentMethods: paymentMethods,
             context: self.context!,
             configuration: dropInConfiguration,
-            title:"app"
+            title:"Everyday"
         )
         component.delegate = session
         component.partialPaymentDelegate = session
