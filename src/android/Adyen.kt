@@ -94,7 +94,7 @@ class Adyen : CordovaPlugin() {
 
     private fun parsePaymentRequest(options: JSONObject): PaymentRequest {
         val amountJson = options.getJSONObject(PaymentRequest.FIELD_AMOUNT)
-        val googlePayConfig = options.optJSONObject(PaymentRequest.FIELD_IS_GPAY_CONFIG)
+        val googlePayConfig = options.optJSONObject(PaymentRequest.FIELD_GPAY_CONFIG)
         val amount = Amount(
             currency = amountJson.optString(PaymentRequest.FIELD_CURRENCY, PaymentRequest.DEFAULT_CURRENCY),
             value = amountJson.optInt(PaymentRequest.FIELD_VALUE, 0)
@@ -113,9 +113,9 @@ class Adyen : CordovaPlugin() {
             sessionData = options.getString(PaymentRequest.FIELD_SESSION_DATA),
             clientKey = options.getString(PaymentRequest.FIELD_CLIENT_KEY),
             isTesting = options.getBoolean(PaymentRequest.FIELD_IS_TESTING),
-            googlePayMerchantName = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_IS_GPAY_MERCHANT_NAME)),
-            googlePayMerchantId = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_IS_GPAY_MERCHANT_ID)),
-            googlePayGatewayMerchantId = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_IS_GPAY_GATEWAY_MERCHANT_ID))
+            googlePayMerchantName = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_GPAY_MERCHANT_NAME)),
+            googlePayMerchantId = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_GPAY_MERCHANT_ID)),
+            googlePayGatewayMerchantId = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_GPAY_GATEWAY_MERCHANT_ID))
         )
     }
 
@@ -181,9 +181,9 @@ data class PaymentRequest(
         const val DEFAULT_MODE = "embedded"
         const val FIELD_CLIENT_KEY = "clientKey"
         const val FIELD_IS_TESTING = "isTesting"
-        const val FIELD_IS_GPAY_CONFIG = "googlePayConfig"
-        const val FIELD_IS_GPAY_MERCHANT_NAME = "merchantName"
-        const val FIELD_IS_GPAY_MERCHANT_ID = "merchantId"
-        const val FIELD_IS_GPAY_GATEWAY_MERCHANT_ID = "gatewayMerchantId"
+        const val FIELD_GPAY_CONFIG = "googlePayConfig"
+        const val FIELD_GPAY_MERCHANT_NAME = "merchantName"
+        const val FIELD_GPAY_MERCHANT_ID = "merchantId"
+        const val FIELD_GPAY_GATEWAY_MERCHANT_ID = "gatewayMerchantId"
     }
 }
