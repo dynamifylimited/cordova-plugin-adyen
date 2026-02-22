@@ -304,7 +304,7 @@ import PassKit
 extension Adyen: AdyenSessionDelegate {
 
     func didComplete(with result: AdyenSessionResult, component: Component, session: AdyenSession) {
-        print("adyen sesion result" , result.resultCode)
+        print("adyen session result" , result.resultCode)
         sessionCompleted = true
         switch result.resultCode {
         case SessionPaymentResultCode.authorised:
