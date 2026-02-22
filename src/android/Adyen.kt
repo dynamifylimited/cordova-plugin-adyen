@@ -52,6 +52,10 @@ class Adyen : CordovaPlugin() {
         return false
     }
 
+    private fun normalize(value: String?): String? =
+        value?.trim()?.takeIf { it.isNotEmpty() && it.lowercase() != "null" }
+
+
     private fun openAdyenActivity(context: Context, paymentRequest: PaymentRequest) {
         AdyenLogger.setLogLevel(
             AdyenLogLevel.DEBUG
@@ -62,6 +66,9 @@ class Adyen : CordovaPlugin() {
         intent.putExtra("clientKey", paymentRequest.clientKey)
         intent.putExtra("countryCode", paymentRequest.countryCode)
         intent.putExtra("isTesting", paymentRequest.isTesting)
+        intent.putExtra("googlePayMerchantName", paymentRequest.googlePayMerchantName)
+        intent.putExtra("googlePayMerchantId", paymentRequest.googlePayMerchantId)
+        intent.putExtra("googlePayGatewayMerchantId", paymentRequest.googlePayGatewayMerchantId)
         cordova.setActivityResultCallback(this)
         cordova.activity.startActivityForResult(intent, REQUEST_CODE_NEW_ACTIVITY)
     }
@@ -87,6 +94,7 @@ class Adyen : CordovaPlugin() {
 
     private fun parsePaymentRequest(options: JSONObject): PaymentRequest {
         val amountJson = options.getJSONObject(PaymentRequest.FIELD_AMOUNT)
+        val googlePayConfig = options.optJSONObject(PaymentRequest.FIELD_GPAY_CONFIG)
         val amount = Amount(
             currency = amountJson.optString(PaymentRequest.FIELD_CURRENCY, PaymentRequest.DEFAULT_CURRENCY),
             value = amountJson.optInt(PaymentRequest.FIELD_VALUE, 0)
@@ -104,7 +112,10 @@ class Adyen : CordovaPlugin() {
             mode = options.optString(PaymentRequest.FIELD_MODE, PaymentRequest.DEFAULT_MODE),
             sessionData = options.getString(PaymentRequest.FIELD_SESSION_DATA),
             clientKey = options.getString(PaymentRequest.FIELD_CLIENT_KEY),
-            isTesting = options.getBoolean(PaymentRequest.FIELD_IS_TESTING)
+            isTesting = options.getBoolean(PaymentRequest.FIELD_IS_TESTING),
+            googlePayMerchantName = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_GPAY_MERCHANT_NAME)),
+            googlePayMerchantId = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_GPAY_MERCHANT_ID)),
+            googlePayGatewayMerchantId = normalize(googlePayConfig?.optString(PaymentRequest.FIELD_GPAY_GATEWAY_MERCHANT_ID))
         )
     }
 
@@ -123,6 +134,8 @@ class Adyen : CordovaPlugin() {
             put(PaymentRequest.FIELD_SHOPPER_LOCALE, paymentRequest.shopperLocale)
             put(PaymentRequest.FIELD_MODE, paymentRequest.mode)
             put(PaymentRequest.FIELD_SESSION_DATA, paymentRequest.sessionData)
+            put(PaymentRequest.FIELD_CLIENT_KEY, paymentRequest.clientKey)
+            put(PaymentRequest.FIELD_IS_TESTING, paymentRequest.isTesting)
         }
     }
 }
@@ -144,7 +157,10 @@ data class PaymentRequest(
     val mode: String,
     val sessionData: String,
     val clientKey: String,
-    val isTesting: Boolean
+    val isTesting: Boolean,
+    val googlePayMerchantName: String?,
+    val googlePayMerchantId: String?,
+    val googlePayGatewayMerchantId: String?
 ) {
     companion object {
         const val FIELD_AMOUNT = "amount"
@@ -165,5 +181,9 @@ data class PaymentRequest(
         const val DEFAULT_MODE = "embedded"
         const val FIELD_CLIENT_KEY = "clientKey"
         const val FIELD_IS_TESTING = "isTesting"
+        const val FIELD_GPAY_CONFIG = "googlePayConfig"
+        const val FIELD_GPAY_MERCHANT_NAME = "merchantName"
+        const val FIELD_GPAY_MERCHANT_ID = "merchantId"
+        const val FIELD_GPAY_GATEWAY_MERCHANT_ID = "gatewayMerchantId"
     }
 }
