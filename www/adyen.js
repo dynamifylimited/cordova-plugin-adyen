@@ -39,4 +39,8 @@ adyenExport.echo =
         return exec(success, error, "Adyen", "echo", [arg0]);
     };
 
+adyenExport.handleRedirectUrl = function(url) {
+    return exec(null, null, "Adyen", "handleRedirectUrl", [url]);
+};
+
 module.exports = adyenExport;

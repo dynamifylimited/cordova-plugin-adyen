@@ -13,17 +13,11 @@ import PassKit
     private var dropInConfiguration: DropInComponent.Configuration? = nil
     private var sessionCompleted = false
 
-    override func pluginInitialize() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(adyenHandleOpenURL(_:)),
-            name: NSNotification.Name.CDVPluginHandleOpenURL,
-            object: nil
-        )
-    }
-
-    @objc func adyenHandleOpenURL(_ notification: NSNotification) {
-        guard let url = notification.object as? URL else { return }
+    @objc(handleRedirectUrl:)
+    func handleRedirectUrl(command: CDVInvokedUrlCommand) {
+        guard let urlString = command.argument(at: 0) as? String,
+              let url = URL(string: urlString) else { return }
+        print("Adyen: manually forwarding redirect URL: \(urlString)")
         RedirectComponent.applicationDidOpen(from: url)
     }
 
@@ -191,10 +185,7 @@ import PassKit
             topViewController.present(alertController, animated: true, completion: nil)
         }
 
-
     }
-
-
 
     private func loadSession(completion: @escaping (Result<AdyenSession, Error>) -> Void) {
         requestAdyenSessionConfiguration (sessionId: self.sessionId, sessionData: self.SessionData, context: self.context!){ [weak self] response in
@@ -252,10 +243,6 @@ import PassKit
 
             self.handlePluginResult(resultCode: resultCode, callbackId: self.callbackId)
         }
-    }
-
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        return RedirectComponent.applicationDidOpen(from: url)
     }
 
     func dismissDropIn() -> Void {
